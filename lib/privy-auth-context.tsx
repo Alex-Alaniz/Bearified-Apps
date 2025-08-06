@@ -26,10 +26,9 @@ async function authenticatePrivyUser(privyUser: any, fallbackEmail: string): Pro
   try {
     // Extract email from Privy user
     const emailAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "email")
-    const twitterAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "twitter_oauth")
-    const googleAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "google_oauth")
+    const phoneAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "phone")
     
-    const userEmail = emailAccount?.address || googleAccount?.email || fallbackEmail
+    const userEmail = emailAccount?.address || fallbackEmail
 
     // Check if this is a test user (still use mock auth for testing)
     const testEmails = [
@@ -47,7 +46,7 @@ async function authenticatePrivyUser(privyUser: any, fallbackEmail: string): Pro
     const userData: User = {
       id: privyUser.id,
       email: userEmail,
-      name: twitterAccount?.name || googleAccount?.name || userEmail.split("@")[0],
+      name: userEmail.split("@")[0] || phoneAccount?.number || "User",
       role: "user", // Default role for new Privy users
       roles: ["user"],
       apps: ["solebrew", "chimpanion"],

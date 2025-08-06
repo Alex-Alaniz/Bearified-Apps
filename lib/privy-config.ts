@@ -8,18 +8,17 @@ export const PRIVY_CLIENT_ID = process.env.NEXT_PUBLIC_PRIVY_CLIENT_ID || "your-
 export function getPrivyConfig(): PrivyConfig {
   return {
     appId: PRIVY_APP_ID,
-    // Enable multiple login methods for broader accessibility
-    loginMethods: ["email", "twitter", "google", "apple", "discord"],
+    // Internal app - only email, phone, and wallet authentication
+    loginMethods: ["email", "sms", "wallet"],
     
     // Embedded wallet configuration
     embeddedWallets: {
       createOnLogin: "users-without-wallets",
       requireUserPasswordOnCreate: false,
-      // Server control for AI agent transactions
-      showWalletUIs: false,
+      showWalletUIs: true, // Show wallet UI for internal users
     },
 
-    // Supported chains for multi-chain functionality
+    // Supported chains for wallet authentication
     supportedChains: [
       // Ethereum mainnet
       {
@@ -28,8 +27,8 @@ export function getPrivyConfig(): PrivyConfig {
         network: "ethereum",
         nativeCurrency: { name: "ETH", symbol: "ETH", decimals: 18 },
         rpcUrls: {
-          default: { http: ["https://eth-mainnet.g.alchemy.com/v2/your-key"] },
-          public: { http: ["https://eth-mainnet.g.alchemy.com/v2/your-key"] },
+          default: { http: ["https://cloudflare-eth.com"] },
+          public: { http: ["https://cloudflare-eth.com"] },
         },
       },
       // Base
@@ -43,15 +42,26 @@ export function getPrivyConfig(): PrivyConfig {
           public: { http: ["https://mainnet.base.org"] },
         },
       },
-      // Solana (via custom integration)
+      // Polygon
+      {
+        id: 137,
+        name: "Polygon",
+        network: "polygon",
+        nativeCurrency: { name: "MATIC", symbol: "MATIC", decimals: 18 },
+        rpcUrls: {
+          default: { http: ["https://polygon-rpc.com"] },
+          public: { http: ["https://polygon-rpc.com"] },
+        },
+      },
     ],
 
     // UI customization for Bearified Apps branding
     appearance: {
-      theme: "dark",
-      accentColor: "#6366f1", // Indigo accent
-      logo: "/placeholder-logo.svg",
+      theme: "light",
+      accentColor: "#3B82F6", // Blue accent matching your brand
+      logo: "https://your-domain.com/bearified-logo.svg", // Replace with your actual logo URL
       showWalletLoginFirst: false,
+      walletList: ["metamask", "coinbase_wallet", "rainbow", "wallet_connect"],
     },
 
     // Additional configuration
@@ -59,10 +69,16 @@ export function getPrivyConfig(): PrivyConfig {
       defaultCountry: "US",
     },
     
-    // Legal configuration
+    // Legal configuration - update with your actual URLs
     legal: {
-      termsAndConditionsUrl: "/terms",
-      privacyPolicyUrl: "/privacy",
+      termsAndConditionsUrl: "https://bearified.com/terms",
+      privacyPolicyUrl: "https://bearified.com/privacy",
+    },
+
+    // Customize modal appearance
+    customAuth: {
+      enabled: true,
+      flow: "popup", // Use popup instead of redirect for better UX
     },
   }
 }
@@ -71,16 +87,16 @@ export function getPrivyConfig(): PrivyConfig {
 export function extractUserProfile(user: any) {
   if (!user) return null
 
-  const twitterAccount = user.linkedAccounts?.find((account: any) => account.type === "twitter_oauth")
   const emailAccount = user.linkedAccounts?.find((account: any) => account.type === "email")
-  const googleAccount = user.linkedAccounts?.find((account: any) => account.type === "google_oauth")
+  const phoneAccount = user.linkedAccounts?.find((account: any) => account.type === "phone")
 
   return {
     id: user.id,
-    email: emailAccount?.address || googleAccount?.email || null,
-    name: twitterAccount?.name || googleAccount?.name || emailAccount?.address?.split("@")[0] || "User",
-    username: twitterAccount?.username || null,
-    avatar: twitterAccount?.profilePictureUrl || googleAccount?.profilePictureUrl || null,
+    email: emailAccount?.address || null,
+    phone: phoneAccount?.number || null,
+    name: emailAccount?.address?.split("@")[0] || phoneAccount?.number || "User",
+    username: null,
+    avatar: null,
     wallets: user.linkedAccounts?.filter((account: any) => 
       account.type === "wallet" || account.type === "smart_wallet"
     ) || [],
