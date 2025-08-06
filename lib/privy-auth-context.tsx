@@ -30,26 +30,20 @@ async function authenticatePrivyUser(privyUser: any, fallbackEmail: string): Pro
     
     const userEmail = emailAccount?.address || fallbackEmail
 
-    // Check if this is a test user (still use mock auth for testing)
-    const testEmails = [
-      "alex@alexalaniz.com",
-      "admin@company.com",
-      "user@company.com"
-    ]
+    // For Privy authentication, always create user from Privy data
+    // Don't fall back to mock auth for any users when using Privy
 
-    if (testEmails.includes(userEmail)) {
-      // Use mock authentication for test users
-      return await authenticateUser(userEmail)
-    }
-
-    // For real Privy users, create a basic user profile
+    // Create user profile from Privy data
+    // Check if this is the super admin email to assign proper role
+    const isSuperAdmin = userEmail === "alex@alexalaniz.com"
+    
     const userData: User = {
       id: privyUser.id,
       email: userEmail,
       name: userEmail.split("@")[0] || phoneAccount?.number || "User",
-      role: "user", // Default role for new Privy users
-      roles: ["user"],
-      apps: ["solebrew", "chimpanion"],
+      role: isSuperAdmin ? "super_admin" : "user",
+      roles: isSuperAdmin ? ["user", "admin", "super_admin"] : ["user"],
+      apps: isSuperAdmin ? ["solebrew", "chimpanion", "admin"] : ["solebrew", "chimpanion"],
       isAuthenticated: true
     }
 

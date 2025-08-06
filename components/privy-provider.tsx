@@ -16,15 +16,9 @@ function PrivyAuthSync({ children }: { children: React.ReactNode }) {
   const { ready, authenticated, user } = usePrivy()
 
   useEffect(() => {
-    // Only sync when Privy is ready - avoid infinite loops
-    if (ready) {
-      if (authenticated && user) {
-        console.log("Privy user authenticated:", user.id)
-        // Don't force navigation here - let the auth page handle it
-      } else if (!authenticated) {
-        // Clean up local storage when not authenticated
-        localStorage.removeItem("bearified_user")
-      }
+    // Only log when ready - don't manipulate auth state here to prevent loops
+    if (ready && authenticated && user) {
+      console.log("Privy user authenticated:", user.id)
     }
   }, [ready, authenticated, user])
 

@@ -1,18 +1,21 @@
 "use client"
 
 import type React from "react"
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { usePrivy } from "@privy-io/react-auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
+import { useBearifiedAuth } from "@/lib/privy-auth-context"
 import { Mail, ArrowRight, Shield, Coffee, Bot, LogIn, Phone, Wallet } from "lucide-react"
 
 export default function AuthPage() {
   const router = useRouter()
   const { toast } = useToast()
+  const { login: bearifiedLogin, user: bearifiedUser, loading: bearifiedLoading } = useBearifiedAuth()
+  const [redirecting, setRedirecting] = useState(false)
   const USE_PRIVY = process.env.NEXT_PUBLIC_USE_PRIVY_AUTH === "true"
   
   // Privy hooks - only use when Privy is enabled
@@ -25,20 +28,23 @@ export default function AuthPage() {
   } : null
 
   useEffect(() => {
-    // Only redirect when Privy is ready and authenticated - prevent infinite loops
-    if (USE_PRIVY && privyHooks?.ready && privyHooks?.authenticated && privyHooks?.user) {
-      // Add a small delay to prevent navigation throttling
-      const timer = setTimeout(() => {
-        toast({
-          title: "Welcome back!",
-          description: "Successfully signed in to Bearified Apps",
-        })
-        router.push("/dashboard")
-      }, 100)
-      
-      return () => clearTimeout(timer)
+    // Check if we should redirect to dashboard
+    if (bearifiedUser && bearifiedUser.isAuthenticated && !redirecting) {
+      setRedirecting(true)
+      toast({
+        title: "Welcome back!",
+        description: "Successfully signed in to Bearified Apps",
+      })
+      router.push("/dashboard")
+      return
     }
-  }, [USE_PRIVY, privyHooks?.ready, privyHooks?.authenticated, privyHooks?.user, router, toast])
+
+    // Handle Privy authentication integration
+    if (USE_PRIVY && privyHooks?.ready && privyHooks?.authenticated && privyHooks?.user && !bearifiedUser && !bearifiedLoading) {
+      // Sync Privy user with our auth system
+      bearifiedLogin(privyHooks.user.id, privyHooks.user)
+    }
+  }, [USE_PRIVY, privyHooks?.ready, privyHooks?.authenticated, privyHooks?.user, bearifiedUser, bearifiedLoading, bearifiedLogin, redirecting, router, toast])
 
   const handlePrivyLogin = () => {
     if (privyHooks?.login) {
@@ -46,12 +52,14 @@ export default function AuthPage() {
     }
   }
 
-  if (USE_PRIVY && !privyHooks?.ready) {
+  if ((USE_PRIVY && !privyHooks?.ready) || bearifiedLoading || redirecting) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Loading authentication...</p>
+          <p className="text-gray-600">
+            {redirecting ? "Redirecting to dashboard..." : "Loading authentication..."}
+          </p>
         </div>
       </div>
     )
