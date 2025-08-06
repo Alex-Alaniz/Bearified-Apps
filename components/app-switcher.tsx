@@ -22,8 +22,8 @@ export function AppSwitcher() {
 
   if (!user) return null
 
-  const accessibleApps = getAccessibleApps([user.role])
-  const accessibleAdminApps = isAdmin ? getAccessibleAdminApps([user.role]) : []
+  const accessibleApps = getAccessibleApps(user.roles || [user.role])
+  const accessibleAdminApps = isAdmin ? getAccessibleAdminApps(user.roles || [user.role]) : []
   const allApps = [...accessibleApps, ...accessibleAdminApps]
 
   // Show all apps but grey out inaccessible ones for users without roles

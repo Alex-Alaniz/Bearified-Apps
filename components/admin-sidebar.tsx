@@ -1,3 +1,5 @@
+"use client"
+
 import {
   Settings,
   Users,
@@ -9,6 +11,7 @@ import {
   BarChart3,
   Bell,
   HelpCircle,
+  LogOut,
 } from "lucide-react"
 
 import {
@@ -26,6 +29,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { ChevronUp, User2 } from "lucide-react"
+import { useAuth } from "@/lib/privy-auth-context"
+import { usePrivy } from "@privy-io/react-auth"
+import { useRouter } from "next/navigation"
 
 // Admin navigation items
 const adminItems = [
@@ -81,6 +87,30 @@ const systemTools = [
 ]
 
 export function AdminSidebar() {
+  const { user, logout, authMode } = useAuth()
+  const router = useRouter()
+  const USE_PRIVY = process.env.NEXT_PUBLIC_USE_PRIVY_AUTH === "true"
+  
+  // Only use Privy hooks when Privy is enabled
+  const privyLogout = USE_PRIVY ? usePrivy().logout : null
+
+  const handleLogout = async () => {
+    // Logout from our auth context first
+    logout()
+    
+    // If using Privy, also logout from Privy
+    if (USE_PRIVY && authMode === "hybrid" && privyLogout) {
+      try {
+        await privyLogout()
+      } catch (error) {
+        console.error("Privy logout error:", error)
+      }
+    }
+    
+    // Navigate to auth page
+    router.push("/auth")
+  }
+
   return (
     <Sidebar>
       <SidebarHeader>
@@ -173,12 +203,14 @@ export function AdminSidebar() {
                   className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
                 >
                   <Avatar className="h-8 w-8 rounded-lg">
-                    <AvatarImage src="/placeholder.svg?height=32&width=32&text=SA" alt="Super Admin" />
-                    <AvatarFallback className="rounded-lg">SA</AvatarFallback>
+                    <AvatarImage src={user?.avatar || "/placeholder.svg?height=32&width=32"} alt={user?.name || "User"} />
+                    <AvatarFallback className="rounded-lg">
+                      {user?.name?.split(" ").map(n => n[0]).join("") || "U"}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="grid flex-1 text-left text-sm leading-tight">
-                    <span className="truncate font-semibold">Super Admin</span>
-                    <span className="truncate text-xs">admin@company.com</span>
+                    <span className="truncate font-semibold">{user?.name || "User"}</span>
+                    <span className="truncate text-xs">{user?.email || "No email"}</span>
                   </div>
                   <ChevronUp className="ml-auto size-4" />
                 </SidebarMenuButton>
@@ -197,7 +229,10 @@ export function AdminSidebar() {
                   <Settings />
                   Settings
                 </DropdownMenuItem>
-                <DropdownMenuItem>Sign out</DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut />
+                  Sign out
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </SidebarMenuItem>

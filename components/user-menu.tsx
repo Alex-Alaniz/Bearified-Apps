@@ -12,18 +12,35 @@ import {
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/lib/privy-auth-context"
+import { usePrivy } from "@privy-io/react-auth"
 import { LogOut, Settings, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export function UserMenu() {
-  const { user, logout } = useAuth()
+  const { user, logout, authMode } = useAuth()
   const router = useRouter()
+  const USE_PRIVY = process.env.NEXT_PUBLIC_USE_PRIVY_AUTH === "true"
+  
+  // Only use Privy hooks when Privy is enabled
+  const privyLogout = USE_PRIVY ? usePrivy().logout : null
 
   if (!user) return null
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    // Logout from our auth context first
     logout()
-    router.push("/")
+    
+    // If using Privy, also logout from Privy
+    if (USE_PRIVY && authMode === "hybrid" && privyLogout) {
+      try {
+        await privyLogout()
+      } catch (error) {
+        console.error("Privy logout error:", error)
+      }
+    }
+    
+    // Navigate to auth page
+    router.push("/auth")
   }
 
   const getRoleBadgeVariant = (role: string) => {

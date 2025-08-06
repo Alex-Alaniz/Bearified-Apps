@@ -52,7 +52,10 @@ export const APP_CONFIGS: AppConfig[] = [
 export function getAccessibleApps(userRoles: string[]): AppConfig[] {
   return APP_CONFIGS.filter(app => 
     app.isActive && 
-    (!app.requiredRole || userRoles.includes(app.requiredRole) || userRoles.includes("admin"))
+    (!app.requiredRole || 
+     userRoles.includes(app.requiredRole) || 
+     userRoles.includes("admin") || 
+     userRoles.includes("super_admin"))
   )
 }
 

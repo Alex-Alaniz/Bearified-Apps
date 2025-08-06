@@ -120,6 +120,12 @@ export function BearifiedAuthProvider({ children }: { children: React.ReactNode 
     setUser(null)
     setApps([])
     localStorage.removeItem("bearified_user")
+    
+    // If using Privy, also logout from Privy
+    if (authMode === "hybrid" && typeof window !== 'undefined') {
+      // We'll handle Privy logout in the components that have access to Privy hooks
+      window.location.href = "/auth"
+    }
   }
 
   const hasRole = (role: string): boolean => {
