@@ -1,80 +1,56 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { useAuth } from "@/lib/privy-auth-context"
+import { usePrivy } from "@privy-io/react-auth"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Mail, ArrowRight, Shield, Coffee, Bot } from "lucide-react"
+import { Mail, ArrowRight, Shield, Coffee, Bot, LogIn, Chrome, Twitter, Github } from "lucide-react"
 
 export default function AuthPage() {
-  const [email, setEmail] = useState("")
-  const [loading, setLoading] = useState(false)
-  const { login } = useAuth()
   const router = useRouter()
   const { toast } = useToast()
+  const USE_PRIVY = process.env.NEXT_PUBLIC_USE_PRIVY_AUTH === "true"
+  
+  // Privy hooks - only use when Privy is enabled
+  const privyHooks = USE_PRIVY ? {
+    ready: usePrivy().ready,
+    authenticated: usePrivy().authenticated,
+    user: usePrivy().user,
+    login: usePrivy().login,
+    logout: usePrivy().logout
+  } : null
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!email) return
-
-    setLoading(true)
-
-    try {
-      const success = await login(email)
-      if (success) {
-        toast({
-          title: "Welcome back!",
-          description: "Successfully signed in to Bearified Apps",
-        })
-        router.push("/dashboard")
-      } else {
-        toast({
-          title: "Authentication failed",
-          description: "Please check your email address and try again",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
+  useEffect(() => {
+    // If using Privy and user is authenticated, redirect to dashboard
+    if (USE_PRIVY && privyHooks?.authenticated && privyHooks?.user) {
       toast({
-        title: "Error",
-        description: "Something went wrong. Please try again.",
-        variant: "destructive",
+        title: "Welcome back!",
+        description: "Successfully signed in to Bearified Apps",
       })
-    } finally {
-      setLoading(false)
+      router.push("/dashboard")
+    }
+  }, [USE_PRIVY, privyHooks?.authenticated, privyHooks?.user, router, toast])
+
+  const handlePrivyLogin = () => {
+    if (privyHooks?.login) {
+      privyHooks.login()
     }
   }
 
-  const demoUsers = [
-    {
-      email: "alex@alexalaniz.com",
-      name: "Alex Alaniz",
-      role: "Super Admin",
-      description: "Full system access",
-      color: "bg-red-500",
-    },
-    {
-      email: "admin@company.com",
-      name: "Admin User",
-      role: "Admin",
-      description: "App management access",
-      color: "bg-blue-500",
-    },
-    {
-      email: "user@company.com",
-      name: "Regular User",
-      role: "User",
-      description: "Limited app access",
-      color: "bg-green-500",
-    },
-  ]
+  if (USE_PRIVY && !privyHooks?.ready) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading authentication...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
@@ -117,89 +93,106 @@ export default function AuthPage() {
           </div>
         </div>
 
-        {/* Right side - Auth form */}
+        {/* Right side - Auth */}
         <div className="space-y-6">
           <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
             <CardHeader className="text-center">
               <CardTitle className="text-2xl">Sign In</CardTitle>
-              <CardDescription>Enter your email to access your applications</CardDescription>
+              <CardDescription>
+                {USE_PRIVY 
+                  ? "Use your account to access Bearified Apps" 
+                  : "Development mode - Mock authentication active"}
+              </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+              {USE_PRIVY ? (
+                <div className="space-y-4">
+                  <Button
+                    onClick={handlePrivyLogin}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    size="lg"
+                  >
+                    <LogIn className="mr-2 h-5 w-5" />
+                    Sign In with Privy
+                  </Button>
+
                   <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="Enter your email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="pl-10"
-                      required
-                    />
+                    <div className="absolute inset-0 flex items-center">
+                      <span className="w-full border-t" />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-white px-2 text-muted-foreground">Supported providers</span>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                    <div className="flex items-center space-x-1">
+                      <Mail className="h-3 w-3" />
+                      <span>Email</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Chrome className="h-3 w-3" />
+                      <span>Google</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Twitter className="h-3 w-3" />
+                      <span>Twitter</span>
+                    </div>
+                    <div className="flex items-center space-x-1">
+                      <Github className="h-3 w-3" />
+                      <span>GitHub</span>
+                    </div>
                   </div>
                 </div>
-                <Button
-                  type="submit"
-                  className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <div className="flex items-center space-x-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      <span>Signing in...</span>
-                    </div>
-                  ) : (
-                    <div className="flex items-center space-x-2">
-                      <span>Sign In</span>
-                      <ArrowRight className="h-4 w-4" />
-                    </div>
-                  )}
-                </Button>
-              </form>
+              ) : (
+                <div className="space-y-4">
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+                    <p className="text-sm text-yellow-800">
+                      <strong>Development Mode:</strong> Real authentication is disabled. 
+                      Use the demo users below or set NEXT_PUBLIC_USE_PRIVY_AUTH=true for production auth.
+                    </p>
+                  </div>
+                  
+                  <Button
+                    onClick={() => router.push("/dashboard")}
+                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                  >
+                    Continue to Dashboard
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
 
-          {/* Demo users */}
+          {/* Info Card */}
           <Card className="shadow-lg border-0 bg-white/60 backdrop-blur-sm">
             <CardHeader>
               <CardTitle className="text-lg flex items-center space-x-2">
                 <Shield className="h-5 w-5" />
-                <span>Demo Users</span>
+                <span>Secure Access</span>
               </CardTitle>
-              <CardDescription>Click any email below to sign in as that user</CardDescription>
+              <CardDescription>
+                {USE_PRIVY 
+                  ? "Your account is protected with industry-standard security" 
+                  : "Enable Privy authentication for production use"}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              {demoUsers.map((user) => (
-                <div
-                  key={user.email}
-                  className="flex items-center justify-between p-3 rounded-lg border bg-white/50 hover:bg-white/80 transition-colors cursor-pointer"
-                  onClick={() => setEmail(user.email)}
-                >
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-8 h-8 ${user.color} rounded-full flex items-center justify-center`}>
-                      <span className="text-white text-xs font-bold">
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </span>
-                    </div>
-                    <div>
-                      <p className="font-medium text-sm">{user.name}</p>
-                      <p className="text-xs text-gray-600">{user.email}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <Badge variant="outline" className="text-xs">
-                      {user.role}
-                    </Badge>
-                    <p className="text-xs text-gray-500 mt-1">{user.description}</p>
-                  </div>
+              <div className="space-y-2 text-sm text-muted-foreground">
+                <p>✓ End-to-end encryption</p>
+                <p>✓ Multi-factor authentication support</p>
+                <p>✓ Role-based access control</p>
+                <p>✓ Secure session management</p>
+              </div>
+              
+              {USE_PRIVY && (
+                <div className="pt-2 border-t">
+                  <p className="text-xs text-muted-foreground">
+                    By signing in, you agree to our Terms of Service and Privacy Policy.
+                  </p>
                 </div>
-              ))}
+              )}
             </CardContent>
           </Card>
         </div>

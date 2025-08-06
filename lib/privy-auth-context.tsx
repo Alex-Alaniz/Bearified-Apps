@@ -21,6 +21,38 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+// Function to authenticate Privy users and map to our User type
+async function authenticatePrivyUser(privyUser: any, identifier: string): Promise<User | null> {
+  try {
+    // First, check if it's a test user email (for hybrid mode)
+    const testUser = await authenticateUser(identifier)
+    if (testUser) {
+      return testUser
+    }
+
+    // Otherwise, create a user from Privy data
+    const email = privyUser.email?.address || privyUser.google?.email || privyUser.twitter?.username || identifier
+    const name = privyUser.google?.name || privyUser.twitter?.name || email.split('@')[0]
+    
+    // In production, you would fetch user data from your database using the Privy user ID
+    // For now, we'll create a basic user object
+    const user: User = {
+      id: privyUser.id,
+      email: email,
+      name: name,
+      role: "user", // Default role - in production, fetch from your database
+      roles: ["user"],
+      apps: ["solebrew", "chimpanion"], // Default apps - in production, fetch from your database
+      isAuthenticated: true
+    }
+
+    return user
+  } catch (error) {
+    console.error("Error authenticating Privy user:", error)
+    return null
+  }
+}
+
 export function BearifiedAuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [apps, setApps] = useState<App[]>([])
@@ -53,9 +85,13 @@ export function BearifiedAuthProvider({ children }: { children: React.ReactNode 
       if (authMode === "hybrid" && privyUser) {
         // Privy user with fallback to test users
         userData = await authenticatePrivyUser(privyUser, identifier)
-      } else {
-        // Mock authentication for development
+      } else if (authMode === "mock") {
+        // Mock authentication for development only
         userData = await authenticateUser(identifier)
+      } else {
+        // Privy auth mode - no mock login allowed
+        console.error("Privy authentication required. Please use the Privy login.")
+        return false
       }
 
       if (userData) {
