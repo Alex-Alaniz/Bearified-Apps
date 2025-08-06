@@ -70,20 +70,25 @@ export function BearifiedAuthProvider({ children }: { children: React.ReactNode 
   )
 
   useEffect(() => {
-    // Check for stored user on mount
+    // Check for stored user on mount - only once
     const storedUser = localStorage.getItem("bearified_user")
     if (storedUser) {
       try {
         const userData = JSON.parse(storedUser)
-        setUser(userData)
-        setApps(getUserApps(userData))
+        // Validate the stored user data
+        if (userData && userData.id && userData.email) {
+          setUser(userData)
+          setApps(getUserApps(userData))
+        } else {
+          localStorage.removeItem("bearified_user")
+        }
       } catch (error) {
         console.error("Error parsing stored user:", error)
         localStorage.removeItem("bearified_user")
       }
     }
     setLoading(false)
-  }, [])
+  }, []) // Empty dependency array - run only once
 
   const login = async (identifier: string, privyUser?: any): Promise<boolean> => {
     setLoading(true)

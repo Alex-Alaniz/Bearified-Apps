@@ -15,7 +15,7 @@ export function getPrivyConfig(): PrivyConfig {
     embeddedWallets: {
       createOnLogin: "users-without-wallets",
       requireUserPasswordOnCreate: false,
-      showWalletUIs: true, // Show wallet UI for internal users
+      showWalletUIs: false, // Disable to prevent WalletConnect conflicts
     },
 
     // Supported chains for wallet authentication
@@ -61,7 +61,7 @@ export function getPrivyConfig(): PrivyConfig {
       accentColor: "#3B82F6", // Blue accent matching your brand
       logo: "https://your-domain.com/bearified-logo.svg", // Replace with your actual logo URL
       showWalletLoginFirst: false,
-      walletList: ["metamask", "coinbase_wallet", "rainbow", "wallet_connect"],
+      walletList: ["metamask", "coinbase_wallet"],
     },
 
     // Additional configuration
@@ -75,10 +75,9 @@ export function getPrivyConfig(): PrivyConfig {
       privacyPolicyUrl: "https://bearified.com/privacy",
     },
 
-    // Customize modal appearance
+    // Customize modal appearance - disable to prevent navigation issues
     customAuth: {
-      enabled: true,
-      flow: "popup", // Use popup instead of redirect for better UX
+      enabled: false,
     },
   }
 }

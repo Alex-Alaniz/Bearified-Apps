@@ -25,15 +25,20 @@ export default function AuthPage() {
   } : null
 
   useEffect(() => {
-    // If using Privy and user is authenticated, redirect to dashboard
-    if (USE_PRIVY && privyHooks?.authenticated && privyHooks?.user) {
-      toast({
-        title: "Welcome back!",
-        description: "Successfully signed in to Bearified Apps",
-      })
-      router.push("/dashboard")
+    // Only redirect when Privy is ready and authenticated - prevent infinite loops
+    if (USE_PRIVY && privyHooks?.ready && privyHooks?.authenticated && privyHooks?.user) {
+      // Add a small delay to prevent navigation throttling
+      const timer = setTimeout(() => {
+        toast({
+          title: "Welcome back!",
+          description: "Successfully signed in to Bearified Apps",
+        })
+        router.push("/dashboard")
+      }, 100)
+      
+      return () => clearTimeout(timer)
     }
-  }, [USE_PRIVY, privyHooks?.authenticated, privyHooks?.user, router, toast])
+  }, [USE_PRIVY, privyHooks?.ready, privyHooks?.authenticated, privyHooks?.user, router, toast])
 
   const handlePrivyLogin = () => {
     if (privyHooks?.login) {
