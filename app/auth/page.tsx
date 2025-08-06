@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { Mail, ArrowRight, Shield, Coffee, Bot, LogIn, Chrome, Twitter, Github } from "lucide-react"
+import { Mail, ArrowRight, Shield, Coffee, Bot, LogIn, Phone, Wallet } from "lucide-react"
 
 export default function AuthPage() {
   const router = useRouter()
@@ -125,22 +125,18 @@ export default function AuthPage() {
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs text-muted-foreground">
+                  <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
                     <div className="flex items-center space-x-1">
                       <Mail className="h-3 w-3" />
                       <span>Email</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <Chrome className="h-3 w-3" />
-                      <span>Google</span>
+                      <Phone className="h-3 w-3" />
+                      <span>SMS</span>
                     </div>
                     <div className="flex items-center space-x-1">
-                      <Twitter className="h-3 w-3" />
-                      <span>Twitter</span>
-                    </div>
-                    <div className="flex items-center space-x-1">
-                      <Github className="h-3 w-3" />
-                      <span>GitHub</span>
+                      <Wallet className="h-3 w-3" />
+                      <span>Wallet</span>
                     </div>
                   </div>
                 </div>
