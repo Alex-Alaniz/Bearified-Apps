@@ -1,10 +1,12 @@
 "use client"
 
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { APP_CONFIGS } from "@/lib/app-configs"
+import { useAuth } from "@/lib/privy-auth-context"
 import { useRouter } from "next/navigation"
 import {
   AppWindowIcon as Apps,
@@ -20,11 +22,34 @@ import {
 
 export default function AdminDashboard() {
   const router = useRouter()
+  const { user } = useAuth()
+  const [userCount, setUserCount] = useState(0)
+  const [loading, setLoading] = useState(true)
 
-  const totalApps = Object.keys(APP_CONFIGS).length + 1 // +1 for franchise
-  const activeApps = Object.values(APP_CONFIGS).filter((app) => app.status === "active").length + 1
-  const totalUsers = 25 // Mock data
-  const activeUsers = 18 // Mock data
+  useEffect(() => {
+    // Fetch user count from Supabase
+    const fetchUserCount = async () => {
+      try {
+        const response = await fetch('/api/admin/stats')
+        if (response.ok) {
+          const data = await response.json()
+          setUserCount(data.userCount || 1) // At least show current user
+        }
+      } catch (error) {
+        console.error('Failed to fetch user stats:', error)
+        setUserCount(1) // Fallback to at least current user
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchUserCount()
+  }, [])
+
+  const totalApps = APP_CONFIGS.length
+  const activeApps = APP_CONFIGS.filter((app) => app.status === "production" || app.status === "beta").length
+  const totalUsers = userCount
+  const activeUsers = userCount // All authenticated users are considered active
 
   return (
     <div className="space-y-6">
@@ -205,9 +230,9 @@ export default function AdminDashboard() {
               <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
               <div className="flex-1">
                 <p className="text-sm">
-                  <span className="font-medium">New user</span> Sarah Johnson added to SoleBrew team
+                  <span className="font-medium">Super Admin</span> {user?.name || 'Admin'} authenticated via Privy
                 </p>
-                <p className="text-xs text-muted-foreground">2 hours ago</p>
+                <p className="text-xs text-muted-foreground">Recently</p>
               </div>
             </div>
 
@@ -215,9 +240,9 @@ export default function AdminDashboard() {
               <div className="w-2 h-2 bg-blue-500 rounded-full mt-2"></div>
               <div className="flex-1">
                 <p className="text-sm">
-                  <span className="font-medium">System update</span> deployed to production
+                  <span className="font-medium">Authentication system</span> updated to hybrid Privy integration
                 </p>
-                <p className="text-xs text-muted-foreground">4 hours ago</p>
+                <p className="text-xs text-muted-foreground">Today</p>
               </div>
             </div>
 
@@ -225,9 +250,9 @@ export default function AdminDashboard() {
               <div className="w-2 h-2 bg-orange-500 rounded-full mt-2"></div>
               <div className="flex-1">
                 <p className="text-sm">
-                  <span className="font-medium">Security scan</span> completed successfully
+                  <span className="font-medium">Project management</span> system deployed successfully
                 </p>
-                <p className="text-xs text-muted-foreground">6 hours ago</p>
+                <p className="text-xs text-muted-foreground">This week</p>
               </div>
             </div>
 
@@ -235,9 +260,9 @@ export default function AdminDashboard() {
               <div className="w-2 h-2 bg-purple-500 rounded-full mt-2"></div>
               <div className="flex-1">
                 <p className="text-sm">
-                  <span className="font-medium">Database backup</span> completed
+                  <span className="font-medium">Chimpanion</span> production deployment active on Vercel
                 </p>
-                <p className="text-xs text-muted-foreground">8 hours ago</p>
+                <p className="text-xs text-muted-foreground">Production</p>
               </div>
             </div>
           </div>
