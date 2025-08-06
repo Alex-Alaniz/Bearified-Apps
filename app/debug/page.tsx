@@ -42,6 +42,8 @@ export default function DebugPage() {
   const [loading, setLoading] = useState(false)
   const [setupLoading, setSetupLoading] = useState(false)
   const [setupResult, setSetupResult] = useState<any>(null)
+  const [seedLoading, setSeedLoading] = useState(false)
+  const [seedResult, setSeedResult] = useState<any>(null)
 
   const checkStatus = async () => {
     setLoading(true)
@@ -86,6 +88,33 @@ export default function DebugPage() {
     }
   }
 
+  const seedBusinessProjects = async () => {
+    setSeedLoading(true)
+    setSeedResult(null)
+    try {
+      const response = await fetch('/api/debug/seed-projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      const data = await response.json()
+      setSeedResult(data)
+      
+      // Refresh status after seeding
+      setTimeout(() => {
+        checkStatus()
+      }, 1000)
+    } catch (error) {
+      setSeedResult({
+        success: false,
+        error: error instanceof Error ? error.message : 'Failed to seed business projects'
+      })
+    } finally {
+      setSeedLoading(false)
+    }
+  }
+
   useEffect(() => {
     checkStatus()
   }, [])
@@ -113,11 +142,58 @@ export default function DebugPage() {
           <Button onClick={runDatabaseSetup} disabled={setupLoading} variant="default">
             {setupLoading ? 'Setting up...' : 'Run Database Setup'}
           </Button>
+          <Button onClick={seedBusinessProjects} disabled={seedLoading} variant="secondary">
+            {seedLoading ? 'Seeding...' : 'Seed Business Projects'}
+          </Button>
           <Button onClick={checkStatus} disabled={loading} variant="outline">
             {loading ? 'Checking...' : 'Refresh Status'}
           </Button>
         </div>
       </div>
+
+      {seedResult && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center space-x-2">
+              <FolderOpen className="h-5 w-5" />
+              <span>Business Projects Seed Results</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <span>Seed Status</span>
+                <Badge variant={seedResult.success ? "default" : "destructive"}>
+                  {seedResult.success ? "Success" : "Failed"}
+                </Badge>
+              </div>
+              
+              {seedResult.message && (
+                <p className="text-sm text-muted-foreground">{seedResult.message}</p>
+              )}
+              
+              {seedResult.data && (
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div className="flex justify-between">
+                    <span>Projects Created:</span>
+                    <span className="font-medium">{seedResult.data.projectsCount || 0}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Tasks Created:</span>
+                    <span className="font-medium">{seedResult.data.tasksCount || 0}</span>
+                  </div>
+                </div>
+              )}
+
+              {seedResult.error && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-800">{seedResult.error}</p>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {setupResult && (
         <Card>

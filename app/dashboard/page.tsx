@@ -8,7 +8,11 @@ import Link from "next/link"
 import { useAuth } from "@/lib/privy-auth-context"
 
 export default function DashboardPage() {
-  const { user, hasRole, isSuperAdmin } = useAuth()
+  const { user, hasRole, isSuperAdmin, apps } = useAuth()
+
+  // Calculate real stats
+  const activeApps = apps?.length || 0
+  const userAccess = user?.apps?.length || 0
 
   if (!user) {
     return (
@@ -37,8 +41,8 @@ export default function DashboardPage() {
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">2</div>
-            <p className="text-xs text-muted-foreground">SoleBrew & Chimpanion</p>
+            <div className="text-2xl font-bold">{activeApps}</div>
+            <p className="text-xs text-muted-foreground">Applications available</p>
           </CardContent>
         </Card>
 
@@ -48,8 +52,8 @@ export default function DashboardPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">3</div>
-            <p className="text-xs text-muted-foreground">Across all applications</p>
+            <div className="text-2xl font-bold">{userAccess}</div>
+            <p className="text-xs text-muted-foreground">Apps you can access</p>
           </CardContent>
         </Card>
 

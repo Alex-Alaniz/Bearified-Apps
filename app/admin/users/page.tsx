@@ -12,48 +12,8 @@ import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, Shield, Users, User
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/lib/privy-auth-context"
 
-const mockUsers = [
-  {
-    id: 1,
-    name: "Admin User",
-    email: "admin@company.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=AU",
-    roles: ["admin"],
-    status: "active",
-    lastLogin: "2 hours ago",
-    apps: ["solebrew", "chimpanion", "franchise"],
-  },
-  {
-    id: 2,
-    name: "Sarah Johnson",
-    email: "sarah@solebrew.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=SJ",
-    roles: ["solebrew-admin"],
-    status: "active",
-    lastLogin: "1 day ago",
-    apps: ["solebrew"],
-  },
-  {
-    id: 3,
-    name: "Mike Chen",
-    email: "mike@chimpanion.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=MC",
-    roles: ["chimpanion-member"],
-    status: "active",
-    lastLogin: "3 hours ago",
-    apps: ["chimpanion"],
-  },
-  {
-    id: 4,
-    name: "Emma Davis",
-    email: "emma@solebrew.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=ED",
-    roles: ["solebrew-member", "franchise-member"],
-    status: "inactive",
-    lastLogin: "1 week ago",
-    apps: ["solebrew", "franchise"],
-  },
-]
+// Users will be loaded from Supabase database
+const mockUsers: any[] = []
 
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("")

@@ -48,40 +48,21 @@ export default function DashboardLayout({
   }
 
   const handleLogout = async () => {
-    console.log("🚨 DASHBOARD LAYOUT LOGOUT CLICKED")
-    console.log("User:", user?.email)
-    console.log("USE_PRIVY:", USE_PRIVY)
-    console.log("authMode:", authMode)
-    console.log("privyLogout available:", !!privyLogout)
-    
     try {
-      // Logout from our auth context first
-      console.log("📤 Calling logout() from auth context")
       logout()
-      
-      // Navigate to auth page with logout flag to prevent re-authentication
-      console.log("🔄 Navigating to /auth?logout=true")
       router.push("/auth?logout=true")
       
-      // If using Privy, logout after navigation
       if (USE_PRIVY && authMode === "hybrid" && privyLogout) {
-        console.log("⏳ Starting Privy logout with delay...")
-        // Small delay to ensure navigation happens first
         setTimeout(async () => {
           try {
-            console.log("🔐 Calling Privy logout")
             await privyLogout()
-            console.log("✅ Privy logout successful")
           } catch (error) {
-            console.error("❌ Privy logout error:", error)
+            console.error("Privy logout error:", error)
           }
         }, 100)
-      } else {
-        console.log("ℹ️ Skipping Privy logout - not in hybrid mode or privyLogout not available")
       }
     } catch (error) {
-      console.error("❌ General logout error:", error)
-      // Still navigate even if errors occur
+      console.error("Logout error:", error)
       router.push("/auth?logout=true")
     }
   }
