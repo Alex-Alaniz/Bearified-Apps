@@ -9,7 +9,7 @@ import { useAuth } from "@/lib/privy-auth-context"
 export default function SoleBrewPage() {
   const { user, hasRole } = useAuth()
 
-  if (!hasRole("solebrew")) {
+  if (!hasRole("solebrew") && !hasRole("admin") && !hasRole("super_admin")) {
     return (
       <div className="flex items-center justify-center h-96">
         <Card className="text-center p-8">

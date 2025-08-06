@@ -27,20 +27,29 @@ export function UserMenu() {
   if (!user) return null
 
   const handleLogout = async () => {
-    // Logout from our auth context first
-    logout()
-    
-    // If using Privy, also logout from Privy
-    if (USE_PRIVY && authMode === "hybrid" && privyLogout) {
-      try {
-        await privyLogout()
-      } catch (error) {
-        console.error("Privy logout error:", error)
+    try {
+      // Logout from our auth context first
+      logout()
+      
+      // Navigate to auth page with logout flag to prevent re-authentication
+      router.push("/auth?logout=true")
+      
+      // If using Privy, logout after navigation
+      if (USE_PRIVY && authMode === "hybrid" && privyLogout) {
+        // Small delay to ensure navigation happens first
+        setTimeout(async () => {
+          try {
+            await privyLogout()
+          } catch (error) {
+            console.error("Privy logout error:", error)
+          }
+        }, 100)
       }
+    } catch (error) {
+      console.error("Logout error:", error)
+      // Still navigate even if errors occur
+      router.push("/auth?logout=true")
     }
-    
-    // Navigate to auth page
-    router.push("/auth")
   }
 
   const getRoleBadgeVariant = (role: string) => {

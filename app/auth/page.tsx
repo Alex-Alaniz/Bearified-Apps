@@ -16,6 +16,7 @@ export default function AuthPage() {
   const { toast } = useToast()
   const { login: bearifiedLogin, user: bearifiedUser, loading: bearifiedLoading } = useBearifiedAuth()
   const [redirecting, setRedirecting] = useState(false)
+  const [isLoggingOut, setIsLoggingOut] = useState(false)
   const USE_PRIVY = process.env.NEXT_PUBLIC_USE_PRIVY_AUTH === "true"
   
   // Privy hooks - only use when Privy is enabled
@@ -28,8 +29,17 @@ export default function AuthPage() {
   } : null
 
   useEffect(() => {
+    // Check if we're in the logout flow
+    const urlParams = new URLSearchParams(window.location.search)
+    if (urlParams.get('logout') === 'true') {
+      setIsLoggingOut(true)
+      // Clear the logout param
+      router.replace('/auth')
+      return
+    }
+
     // Check if we should redirect to dashboard
-    if (bearifiedUser && bearifiedUser.isAuthenticated && !redirecting) {
+    if (bearifiedUser && bearifiedUser.isAuthenticated && !redirecting && !isLoggingOut) {
       setRedirecting(true)
       toast({
         title: "Welcome back!",
@@ -40,11 +50,11 @@ export default function AuthPage() {
     }
 
     // Handle Privy authentication integration
-    if (USE_PRIVY && privyHooks?.ready && privyHooks?.authenticated && privyHooks?.user && !bearifiedUser && !bearifiedLoading) {
+    if (USE_PRIVY && privyHooks?.ready && privyHooks?.authenticated && privyHooks?.user && !bearifiedUser && !bearifiedLoading && !isLoggingOut) {
       // Sync Privy user with our auth system
       bearifiedLogin(privyHooks.user.id, privyHooks.user)
     }
-  }, [USE_PRIVY, privyHooks?.ready, privyHooks?.authenticated, privyHooks?.user, bearifiedUser, bearifiedLoading, bearifiedLogin, redirecting, router, toast])
+  }, [USE_PRIVY, privyHooks?.ready, privyHooks?.authenticated, privyHooks?.user, bearifiedUser, bearifiedLoading, bearifiedLogin, redirecting, router, toast, isLoggingOut])
 
   const handlePrivyLogin = () => {
     if (privyHooks?.login) {
