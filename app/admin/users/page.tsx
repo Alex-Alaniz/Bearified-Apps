@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
 import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, Shield, Users, UserCheck, UserX, Mail } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/lib/privy-auth-context"
 
 const mockUsers = [
   {
@@ -57,8 +58,32 @@ const mockUsers = [
 export default function UserManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const router = useRouter()
+  const { user: currentUser } = useAuth()
+  
+  // Combine mock users with the current authenticated user
+  const [allUsers, setAllUsers] = useState(mockUsers)
+  
+  useEffect(() => {
+    if (currentUser) {
+      // Add current user if not already in the list
+      const userExists = mockUsers.some(u => u.email === currentUser.email)
+      if (!userExists) {
+        const currentUserData = {
+          id: 999, // Temporary ID for Privy user
+          name: currentUser.name || "Unknown User",
+          email: currentUser.email || "no-email@bearified.com",
+          avatar: currentUser.avatar || "/placeholder.svg?height=40&width=40&text=U",
+          roles: currentUser.roles || [],
+          status: "active",
+          lastLogin: "Just now",
+          apps: currentUser.apps || [],
+        }
+        setAllUsers([currentUserData, ...mockUsers])
+      }
+    }
+  }, [currentUser])
 
-  const filteredUsers = mockUsers.filter(
+  const filteredUsers = allUsers.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase()),
@@ -97,9 +122,9 @@ export default function UserManagement() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{mockUsers.length}</div>
+            <div className="text-2xl font-bold">{allUsers.length}</div>
             <p className="text-xs text-muted-foreground">
-              {mockUsers.filter((u) => u.status === "active").length} active
+              {allUsers.filter((u) => u.status === "active").length} active
             </p>
           </CardContent>
         </Card>
@@ -111,7 +136,7 @@ export default function UserManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-green-600">
-              {mockUsers.filter((u) => u.status === "active").length}
+              {allUsers.filter((u) => u.status === "active").length}
             </div>
             <p className="text-xs text-muted-foreground">Currently online</p>
           </CardContent>
@@ -124,7 +149,7 @@ export default function UserManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-purple-600">
-              {mockUsers.filter((u) => u.roles.includes("admin")).length}
+              {allUsers.filter((u) => u.roles.includes("admin") || u.roles.includes("super_admin")).length}
             </div>
             <p className="text-xs text-muted-foreground">System administrators</p>
           </CardContent>
@@ -137,7 +162,7 @@ export default function UserManagement() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">
-              {mockUsers.filter((u) => u.status === "inactive").length}
+              {allUsers.filter((u) => u.status === "inactive").length}
             </div>
             <p className="text-xs text-muted-foreground">Need attention</p>
           </CardContent>
@@ -202,8 +227,12 @@ export default function UserManagement() {
                   <TableCell>
                     <div className="flex flex-wrap gap-1">
                       {user.roles.map((role) => (
-                        <Badge key={role} variant={role === "admin" ? "default" : "secondary"} className="text-xs">
-                          {role}
+                        <Badge 
+                          key={role} 
+                          variant={role === "admin" || role === "super_admin" ? "default" : "secondary"} 
+                          className="text-xs"
+                        >
+                          {role === "super_admin" ? "Super Admin" : role}
                         </Badge>
                       ))}
                     </div>

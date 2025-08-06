@@ -93,7 +93,7 @@ export default function DashboardPage() {
                     <CardDescription>Coffee shop management</CardDescription>
                   </div>
                 </div>
-                {hasRole("solebrew") ? (
+                {hasRole("solebrew") || hasRole("admin") || hasRole("super_admin") ? (
                   <Badge variant="default">Active</Badge>
                 ) : (
                   <Badge variant="secondary">No Access</Badge>
@@ -105,7 +105,7 @@ export default function DashboardPage() {
                 Manage your coffee shop operations, inventory, and customer analytics all in one place.
               </p>
               <div className="flex space-x-2">
-                {hasRole("solebrew") ? (
+                {hasRole("solebrew") || hasRole("admin") || hasRole("super_admin") ? (
                   <Button asChild>
                     <Link href="/dashboard/solebrew">Open App</Link>
                   </Button>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                     <CardDescription>Security & intelligence</CardDescription>
                   </div>
                 </div>
-                {hasRole("chimpanion") ? (
+                {hasRole("chimpanion") || hasRole("admin") || hasRole("super_admin") ? (
                   <Badge variant="default">Active</Badge>
                 ) : (
                   <Badge variant="secondary">No Access</Badge>
@@ -141,7 +141,7 @@ export default function DashboardPage() {
                 Advanced security monitoring and business intelligence platform for comprehensive insights.
               </p>
               <div className="flex space-x-2">
-                {hasRole("chimpanion") ? (
+                {hasRole("chimpanion") || hasRole("admin") || hasRole("super_admin") ? (
                   <Button asChild>
                     <Link href="/dashboard/chimpanion">Open App</Link>
                   </Button>
