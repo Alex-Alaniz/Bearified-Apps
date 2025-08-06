@@ -22,34 +22,43 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Function to authenticate Privy users and map to our User type
-async function authenticatePrivyUser(privyUser: any, identifier: string): Promise<User | null> {
+async function authenticatePrivyUser(privyUser: any, fallbackEmail: string): Promise<User | null> {
   try {
-    // First, check if it's a test user email (for hybrid mode)
-    const testUser = await authenticateUser(identifier)
-    if (testUser) {
-      return testUser
+    // Extract email from Privy user
+    const emailAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "email")
+    const twitterAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "twitter_oauth")
+    const googleAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "google_oauth")
+    
+    const userEmail = emailAccount?.address || googleAccount?.email || fallbackEmail
+
+    // Check if this is a test user (still use mock auth for testing)
+    const testEmails = [
+      "alex@alexalaniz.com",
+      "admin@company.com",
+      "user@company.com"
+    ]
+
+    if (testEmails.includes(userEmail)) {
+      // Use mock authentication for test users
+      return await authenticateUser(userEmail)
     }
 
-    // Otherwise, create a user from Privy data
-    const email = privyUser.email?.address || privyUser.google?.email || privyUser.twitter?.username || identifier
-    const name = privyUser.google?.name || privyUser.twitter?.name || email.split('@')[0]
-    
-    // In production, you would fetch user data from your database using the Privy user ID
-    // For now, we'll create a basic user object
-    const user: User = {
+    // For real Privy users, create a basic user profile
+    const userData: User = {
       id: privyUser.id,
-      email: email,
-      name: name,
-      role: "user", // Default role - in production, fetch from your database
+      email: userEmail,
+      name: twitterAccount?.name || googleAccount?.name || userEmail.split("@")[0],
+      role: "user", // Default role for new Privy users
       roles: ["user"],
-      apps: ["solebrew", "chimpanion"], // Default apps - in production, fetch from your database
+      apps: ["solebrew", "chimpanion"],
       isAuthenticated: true
     }
 
-    return user
+    return userData
   } catch (error) {
     console.error("Error authenticating Privy user:", error)
-    return null
+    // Fallback to mock auth if Privy processing fails
+    return await authenticateUser(fallbackEmail)
   }
 }
 
@@ -142,50 +151,6 @@ export function BearifiedAuthProvider({ children }: { children: React.ReactNode 
   )
 }
 
-// Helper function to authenticate Privy users with fallback to test users
-async function authenticatePrivyUser(privyUser: any, fallbackEmail: string): Promise<User | null> {
-  try {
-    // Extract email from Privy user
-    const emailAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "email")
-    const twitterAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "twitter_oauth")
-    const googleAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "google_oauth")
-    
-    const userEmail = emailAccount?.address || googleAccount?.email || fallbackEmail
-
-    // Check if this is a test user (still use mock auth for testing)
-    const testEmails = [
-      "admin@bearified.com",
-      "user@bearified.com", 
-      "solebrew@bearified.com",
-      "chimpanion@bearified.com"
-    ]
-
-    if (testEmails.includes(userEmail)) {
-      // Use mock authentication for test users
-      return await authenticateUser(userEmail)
-    }
-
-    // For real Privy users, create a basic user profile
-    const userData: User = {
-      id: privyUser.id,
-      email: userEmail,
-      name: twitterAccount?.name || googleAccount?.name || userEmail.split("@")[0],
-      role: "user", // Default role for new Privy users
-      roles: ["user"],
-      avatar: twitterAccount?.profilePictureUrl || googleAccount?.profilePictureUrl || null,
-      createdAt: new Date().toISOString(),
-      walletAddress: privyUser.linkedAccounts?.find((account: any) => 
-        account.type === "wallet" || account.type === "smart_wallet"
-      )?.address || null,
-    }
-
-    return userData
-  } catch (error) {
-    console.error("Error authenticating Privy user:", error)
-    // Fallback to mock auth if Privy processing fails
-    return await authenticateUser(fallbackEmail)
-  }
-}
 
 export function useBearifiedAuth() {
   const context = useContext(AuthContext)
