@@ -3,6 +3,7 @@
 import type React from "react"
 
 import { useAuth } from "@/lib/privy-auth-context"
+import { usePrivy } from "@privy-io/react-auth"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { Button } from "@/components/ui/button"
@@ -17,9 +18,13 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode
 }) {
-  const { user, loading, logout, hasRole, isSuperAdmin } = useAuth()
+  const { user, loading, logout, hasRole, isSuperAdmin, authMode } = useAuth()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
+  const USE_PRIVY = process.env.NEXT_PUBLIC_USE_PRIVY_AUTH === "true"
+  
+  // Only use Privy hooks when Privy is enabled
+  const privyLogout = USE_PRIVY ? usePrivy().logout : null
 
   useEffect(() => {
     if (!loading && !user) {
@@ -42,9 +47,43 @@ export default function DashboardLayout({
     return null
   }
 
-  const handleLogout = () => {
-    logout()
-    router.push("/auth")
+  const handleLogout = async () => {
+    console.log("🚨 DASHBOARD LAYOUT LOGOUT CLICKED")
+    console.log("User:", user?.email)
+    console.log("USE_PRIVY:", USE_PRIVY)
+    console.log("authMode:", authMode)
+    console.log("privyLogout available:", !!privyLogout)
+    
+    try {
+      // Logout from our auth context first
+      console.log("📤 Calling logout() from auth context")
+      logout()
+      
+      // Navigate to auth page with logout flag to prevent re-authentication
+      console.log("🔄 Navigating to /auth?logout=true")
+      router.push("/auth?logout=true")
+      
+      // If using Privy, logout after navigation
+      if (USE_PRIVY && authMode === "hybrid" && privyLogout) {
+        console.log("⏳ Starting Privy logout with delay...")
+        // Small delay to ensure navigation happens first
+        setTimeout(async () => {
+          try {
+            console.log("🔐 Calling Privy logout")
+            await privyLogout()
+            console.log("✅ Privy logout successful")
+          } catch (error) {
+            console.error("❌ Privy logout error:", error)
+          }
+        }, 100)
+      } else {
+        console.log("ℹ️ Skipping Privy logout - not in hybrid mode or privyLogout not available")
+      }
+    } catch (error) {
+      console.error("❌ General logout error:", error)
+      // Still navigate even if errors occur
+      router.push("/auth?logout=true")
+    }
   }
 
   return (
@@ -95,7 +134,7 @@ export default function DashboardLayout({
               <Link
                 href="/dashboard/solebrew"
                 className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-                  hasRole("solebrew") ? "hover:bg-amber-50 text-amber-700" : "text-gray-400 cursor-not-allowed"
+                  hasRole("solebrew") || hasRole("admin") || hasRole("super_admin") ? "hover:bg-amber-50 text-amber-700" : "text-gray-400 cursor-not-allowed"
                 }`}
                 onClick={() => setSidebarOpen(false)}
               >
@@ -103,7 +142,7 @@ export default function DashboardLayout({
                   <Coffee className="h-5 w-5" />
                   <span>SoleBrew</span>
                 </div>
-                {hasRole("solebrew") ? (
+                {hasRole("solebrew") || hasRole("admin") || hasRole("super_admin") ? (
                   <Badge variant="default" className="text-xs">
                     Active
                   </Badge>
@@ -117,7 +156,7 @@ export default function DashboardLayout({
               <Link
                 href="/dashboard/chimpanion"
                 className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-                  hasRole("chimpanion") ? "hover:bg-green-50 text-green-700" : "text-gray-400 cursor-not-allowed"
+                  hasRole("chimpanion") || hasRole("admin") || hasRole("super_admin") ? "hover:bg-green-50 text-green-700" : "text-gray-400 cursor-not-allowed"
                 }`}
                 onClick={() => setSidebarOpen(false)}
               >
@@ -125,7 +164,7 @@ export default function DashboardLayout({
                   <Bot className="h-5 w-5" />
                   <span>Chimpanion</span>
                 </div>
-                {hasRole("chimpanion") ? (
+                {hasRole("chimpanion") || hasRole("admin") || hasRole("super_admin") ? (
                   <Badge variant="default" className="text-xs">
                     Active
                   </Badge>

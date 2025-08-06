@@ -11,42 +11,56 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { useAuth } from "@/lib/privy-auth-context"
+import { useAuth as useBearifiedAuth } from "@/lib/privy-auth-context"
 import { usePrivy } from "@privy-io/react-auth"
 import { LogOut, Settings, User } from "lucide-react"
 import { useRouter } from "next/navigation"
 
 export function UserMenu() {
-  const { user, logout, authMode } = useAuth()
+  const { user, logout, authMode } = useBearifiedAuth()
   const router = useRouter()
   const USE_PRIVY = process.env.NEXT_PUBLIC_USE_PRIVY_AUTH === "true"
   
   // Only use Privy hooks when Privy is enabled
   const privyLogout = USE_PRIVY ? usePrivy().logout : null
 
+  console.log("🔍 UserMenu render - user:", user?.email, "authMode:", authMode)
+
   if (!user) return null
 
   const handleLogout = async () => {
+    console.log("🚨 LOGOUT CLICKED - Starting logout process")
+    console.log("USE_PRIVY:", USE_PRIVY)
+    console.log("authMode:", authMode)
+    console.log("privyLogout available:", !!privyLogout)
+    
     try {
       // Logout from our auth context first
+      console.log("📤 Calling logout() from auth context")
       logout()
       
       // Navigate to auth page with logout flag to prevent re-authentication
+      console.log("🔄 Navigating to /auth?logout=true")
       router.push("/auth?logout=true")
       
       // If using Privy, logout after navigation
       if (USE_PRIVY && authMode === "hybrid" && privyLogout) {
+        console.log("⏳ Starting Privy logout with delay...")
         // Small delay to ensure navigation happens first
         setTimeout(async () => {
           try {
+            console.log("🔐 Calling Privy logout")
             await privyLogout()
+            console.log("✅ Privy logout successful")
           } catch (error) {
-            console.error("Privy logout error:", error)
+            console.error("❌ Privy logout error:", error)
           }
         }, 100)
+      } else {
+        console.log("ℹ️ Skipping Privy logout - not in hybrid mode or privyLogout not available")
       }
     } catch (error) {
-      console.error("Logout error:", error)
+      console.error("❌ General logout error:", error)
       // Still navigate even if errors occur
       router.push("/auth?logout=true")
     }
