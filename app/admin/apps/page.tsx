@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,17 +28,59 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 export default function AppManagement() {
   const [searchTerm, setSearchTerm] = useState("")
+  const [apps, setApps] = useState([])
+  const [loading, setLoading] = useState(true)
   const router = useRouter()
 
-  // Use APP_CONFIGS directly without referencing non-existent FRANCHISE_CONFIG
-  const allApps = APP_CONFIGS.map(app => ({
-    ...app,
-    version: "1.0.0",
-    icon: app.icon === "Coffee" ? Coffee : app.icon === "Shield" ? Shield : Settings,
-    color: app.color.includes("amber") ? "#f59e0b" : 
-           app.color.includes("green") ? "#10b981" : 
-           app.color.includes("purple") ? "#8b5cf6" : "#6b7280"
-  }))
+  useEffect(() => {
+    const fetchApps = async () => {
+      try {
+        const response = await fetch('/api/admin/apps')
+        if (response.ok) {
+          const data = await response.json()
+          const appsWithIcons = data.apps.map(app => ({
+            ...app,
+            version: "1.0.0",
+            icon: app.icon === "Coffee" ? Coffee : app.icon === "Shield" ? Shield : Settings,
+            color: typeof app.color === 'string' ? app.color : 
+                   app.color?.includes("amber") ? "#f59e0b" : 
+                   app.color?.includes("green") ? "#10b981" : 
+                   app.color?.includes("purple") ? "#8b5cf6" : "#6b7280"
+          }))
+          setApps(appsWithIcons)
+        } else {
+          // Fallback to APP_CONFIGS if API fails
+          const fallbackApps = APP_CONFIGS.map(app => ({
+            ...app,
+            version: "1.0.0",
+            icon: app.icon === "Coffee" ? Coffee : app.icon === "Shield" ? Shield : Settings,
+            color: app.color.includes("amber") ? "#f59e0b" : 
+                   app.color.includes("green") ? "#10b981" : 
+                   app.color.includes("purple") ? "#8b5cf6" : "#6b7280"
+          }))
+          setApps(fallbackApps)
+        }
+      } catch (error) {
+        console.error('Error fetching apps:', error)
+        // Fallback to APP_CONFIGS on error
+        const fallbackApps = APP_CONFIGS.map(app => ({
+          ...app,
+          version: "1.0.0",
+          icon: app.icon === "Coffee" ? Coffee : app.icon === "Shield" ? Shield : Settings,
+          color: app.color.includes("amber") ? "#f59e0b" : 
+                 app.color.includes("green") ? "#10b981" : 
+                 app.color.includes("purple") ? "#8b5cf6" : "#6b7280"
+        }))
+        setApps(fallbackApps)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchApps()
+  }, [])
+
+  const allApps = apps
 
   const filteredApps = allApps.filter(
     (app) =>
@@ -70,6 +112,31 @@ export default function AppManagement() {
       default:
         return "bg-gray-100 text-gray-800"
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">App Management</h1>
+            <p className="text-muted-foreground">Loading applications...</p>
+          </div>
+        </div>
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map(i => (
+            <Card key={i}>
+              <CardContent className="p-6">
+                <div className="animate-pulse space-y-2">
+                  <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                  <div className="h-8 bg-gray-200 rounded w-1/2"></div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    )
   }
 
   return (

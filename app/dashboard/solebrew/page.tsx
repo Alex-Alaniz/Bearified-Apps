@@ -36,10 +36,26 @@ export default function SoleBrewPage() {
             <p className="text-gray-600">Coffee shop management platform</p>
           </div>
         </div>
-        <Badge variant="default" className="bg-amber-500">
-          Active
+        <Badge variant="secondary" className="bg-yellow-100 text-yellow-800">
+          In Development
         </Badge>
       </div>
+
+      {/* Development Notice */}
+      <Card className="border-yellow-200 bg-yellow-50">
+        <CardContent className="pt-6">
+          <div className="flex items-start space-x-3">
+            <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+            <div>
+              <h3 className="font-semibold text-yellow-800">SoleBrew is Under Development</h3>
+              <p className="text-yellow-700 text-sm mt-1">
+                Coffee shop management platform preparing to launch on Believe App. Features include point-of-sale, 
+                inventory management, customer loyalty, and franchise support for coffee shop owners.
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       {/* Quick Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -49,9 +65,9 @@ export default function SoleBrewPage() {
             <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">$1,234</div>
+            <div className="text-2xl font-bold text-muted-foreground">--</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+12%</span> from yesterday
+              Coming soon in beta release
             </p>
           </CardContent>
         </Card>
@@ -62,9 +78,9 @@ export default function SoleBrewPage() {
             <Coffee className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">89</div>
+            <div className="text-2xl font-bold text-muted-foreground">--</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+8%</span> from yesterday
+              Coming soon in beta release
             </p>
           </CardContent>
         </Card>
@@ -75,9 +91,9 @@ export default function SoleBrewPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">156</div>
+            <div className="text-2xl font-bold text-muted-foreground">--</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+5%</span> this week
+              Coming soon in beta release
             </p>
           </CardContent>
         </Card>
@@ -88,9 +104,9 @@ export default function SoleBrewPage() {
             <Package className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">42</div>
+            <div className="text-2xl font-bold text-muted-foreground">--</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-orange-600">3 low stock</span> items
+              Coming soon in beta release
             </p>
           </CardContent>
         </Card>
@@ -108,25 +124,14 @@ export default function SoleBrewPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Espresso</span>
-                <span className="text-sm font-medium">$456 (37%)</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Latte</span>
-                <span className="text-sm font-medium">$321 (26%)</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Cappuccino</span>
-                <span className="text-sm font-medium">$234 (19%)</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Other</span>
-                <span className="text-sm font-medium">$223 (18%)</span>
+              <div className="text-center py-8 text-muted-foreground">
+                <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-sm">Sales analytics dashboard coming soon</p>
+                <p className="text-xs mt-2">Track best-selling items, revenue trends, and performance metrics</p>
               </div>
             </div>
-            <Button className="w-full mt-4 bg-transparent" variant="outline">
-              View Detailed Analytics
+            <Button className="w-full mt-4 bg-transparent" variant="outline" disabled>
+              Feature in Development
             </Button>
           </CardContent>
         </Card>
@@ -141,25 +146,14 @@ export default function SoleBrewPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Coffee Beans</span>
-                <Badge variant="default">In Stock</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Milk</span>
-                <Badge variant="secondary">Low Stock</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Cups</span>
-                <Badge variant="default">In Stock</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">Sugar</span>
-                <Badge variant="destructive">Out of Stock</Badge>
+              <div className="text-center py-8 text-muted-foreground">
+                <Package className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                <p className="text-sm">Inventory management system coming soon</p>
+                <p className="text-xs mt-2">Track stock levels, set reorder alerts, and manage suppliers</p>
               </div>
             </div>
-            <Button className="w-full mt-4 bg-transparent" variant="outline">
-              Manage Inventory
+            <Button className="w-full mt-4 bg-transparent" variant="outline" disabled>
+              Feature in Development
             </Button>
           </CardContent>
         </Card>
@@ -172,57 +166,19 @@ export default function SoleBrewPage() {
           <CardDescription>Latest customer orders from your coffee shop</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
-                  <Coffee className="h-4 w-4 text-amber-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Large Latte</p>
-                  <p className="text-sm text-gray-600">Customer: Sarah J.</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">$4.50</p>
-                <p className="text-sm text-gray-600">2 min ago</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
-                  <Coffee className="h-4 w-4 text-amber-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Cappuccino + Croissant</p>
-                  <p className="text-sm text-gray-600">Customer: Mike R.</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">$7.25</p>
-                <p className="text-sm text-gray-600">5 min ago</p>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between p-3 border rounded-lg">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-amber-100 rounded-full flex items-center justify-center">
-                  <Coffee className="h-4 w-4 text-amber-600" />
-                </div>
-                <div>
-                  <p className="font-medium">Espresso Shot</p>
-                  <p className="text-sm text-gray-600">Customer: Alex K.</p>
-                </div>
-              </div>
-              <div className="text-right">
-                <p className="font-medium">$2.00</p>
-                <p className="text-sm text-gray-600">8 min ago</p>
-              </div>
+          <div className="text-center py-12 text-muted-foreground">
+            <Coffee className="h-16 w-16 mx-auto mb-6 opacity-50" />
+            <h3 className="text-lg font-medium mb-2">Order Management System</h3>
+            <p className="text-sm mb-4">Point-of-sale and order tracking coming in beta release</p>
+            <div className="space-y-2 text-xs">
+              <p>✓ Real-time order processing</p>
+              <p>✓ Customer management</p>
+              <p>✓ Payment integration</p>
+              <p>✓ Kitchen display system</p>
             </div>
           </div>
-          <Button className="w-full mt-4 bg-transparent" variant="outline">
-            View All Orders
+          <Button className="w-full mt-4 bg-transparent" variant="outline" disabled>
+            Feature in Development
           </Button>
         </CardContent>
       </Card>

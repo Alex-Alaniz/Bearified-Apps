@@ -3,7 +3,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Bot, Shield, Activity, AlertTriangle, Eye, Lock } from "lucide-react"
+import { Bot, Shield, Activity, AlertTriangle, Eye, Lock, Wallet, MessageCircle, Smartphone, Globe } from "lucide-react"
 import { useAuth } from "@/lib/privy-auth-context"
 
 export default function ChimpanionPage() {
@@ -28,68 +28,94 @@ export default function ChimpanionPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center space-x-4">
-          <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-lg flex items-center justify-center">
             <Bot className="h-6 w-6 text-white" />
           </div>
           <div>
             <h1 className="text-3xl font-bold">Chimpanion</h1>
-            <p className="text-gray-600">Security and intelligence platform</p>
+            <p className="text-gray-600">Blockchain AI companion app</p>
           </div>
         </div>
-        <Badge variant="default" className="bg-green-500">
-          Active
+        <Badge variant="default" className="bg-green-100 text-green-800">
+          Production V1
         </Badge>
       </div>
 
-      {/* Security Status */}
+      {/* Production Status */}
+      <Card className="border-green-200 bg-green-50">
+        <CardContent className="pt-6">
+          <div className="flex items-start space-x-3">
+            <div className="w-2 h-2 bg-green-500 rounded-full mt-2"></div>
+            <div>
+              <h3 className="font-semibold text-green-800">Chimpanion V1 is Live in Production</h3>
+              <p className="text-green-700 text-sm mt-1">
+                Blockchain AI companion app helping users manage their wallets in natural language. 
+                Available on Vercel web platform and Apple TestFlight beta program.
+              </p>
+              <div className="flex space-x-4 mt-3">
+                <Button size="sm" variant="outline" className="bg-white">
+                  <Globe className="mr-2 h-3 w-3" />
+                  View Web App
+                </Button>
+                <Button size="sm" variant="outline" className="bg-white">
+                  <Smartphone className="mr-2 h-3 w-3" />
+                  TestFlight Beta
+                </Button>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* App Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Security Score</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
+            <Bot className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">98.5%</div>
+            <div className="text-2xl font-bold text-purple-600">Beta</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">Excellent</span> security posture
+              Growing user base in TestFlight
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Monitors</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Wallet Connections</CardTitle>
+            <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
+            <div className="text-2xl font-bold text-green-600">Multi-chain</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">All systems</span> monitored
+              Supports multiple blockchains
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Threats Blocked</CardTitle>
-            <Lock className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">AI Conversations</CardTitle>
+            <MessageCircle className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">1,247</div>
+            <div className="text-2xl font-bold text-blue-600">Natural</div>
             <p className="text-xs text-muted-foreground">
-              <span className="text-green-600">+15%</span> from last week
+              Language-based wallet management
             </p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">System Health</CardTitle>
+            <CardTitle className="text-sm font-medium">Platform Status</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-600">Optimal</div>
-            <p className="text-xs text-muted-foreground">All systems operational</p>
+            <div className="text-2xl font-bold text-green-600">Live</div>
+            <p className="text-xs text-muted-foreground">Production deployment active</p>
           </CardContent>
         </Card>
       </div>
@@ -99,48 +125,48 @@ export default function ChimpanionPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <AlertTriangle className="h-5 w-5" />
-              <span>Security Alerts</span>
+              <MessageCircle className="h-5 w-5" />
+              <span>AI Chat Features</span>
             </CardTitle>
-            <CardDescription>Recent security events and notifications</CardDescription>
+            <CardDescription>Natural language blockchain interaction capabilities</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-green-50">
+              <div className="flex items-center justify-between p-3 border rounded-lg bg-purple-50">
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
                   <div>
-                    <p className="text-sm font-medium">Login successful</p>
-                    <p className="text-xs text-gray-600">User: {user?.email}</p>
+                    <p className="text-sm font-medium">Wallet Management</p>
+                    <p className="text-xs text-gray-600">Natural language wallet operations</p>
                   </div>
                 </div>
-                <span className="text-xs text-gray-500">Just now</span>
+                <Badge variant="default" className="bg-purple-100 text-purple-800">Active</Badge>
               </div>
 
               <div className="flex items-center justify-between p-3 border rounded-lg bg-blue-50">
                 <div className="flex items-center space-x-3">
                   <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
                   <div>
-                    <p className="text-sm font-medium">System scan completed</p>
-                    <p className="text-xs text-gray-600">No threats detected</p>
+                    <p className="text-sm font-medium">Transaction Support</p>
+                    <p className="text-xs text-gray-600">Multi-chain transaction processing</p>
                   </div>
                 </div>
-                <span className="text-xs text-gray-500">5 min ago</span>
+                <Badge variant="default" className="bg-blue-100 text-blue-800">Live</Badge>
               </div>
 
-              <div className="flex items-center justify-between p-3 border rounded-lg bg-yellow-50">
+              <div className="flex items-center justify-between p-3 border rounded-lg bg-green-50">
                 <div className="flex items-center space-x-3">
-                  <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
                   <div>
-                    <p className="text-sm font-medium">Firewall rule updated</p>
-                    <p className="text-xs text-gray-600">Enhanced protection enabled</p>
+                    <p className="text-sm font-medium">ElizaOS Integration</p>
+                    <p className="text-xs text-gray-600">AI agent framework powering conversations</p>
                   </div>
                 </div>
-                <span className="text-xs text-gray-500">1 hour ago</span>
+                <Badge variant="default" className="bg-green-100 text-green-800">Production</Badge>
               </div>
             </div>
-            <Button className="w-full mt-4 bg-transparent" variant="outline">
-              View All Alerts
+            <Button className="w-full mt-4 bg-transparent" variant="outline" disabled>
+              Chat Interface (Production App)
             </Button>
           </CardContent>
         </Card>
@@ -148,90 +174,82 @@ export default function ChimpanionPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Activity className="h-5 w-5" />
-              <span>System Monitoring</span>
+              <Wallet className="h-5 w-5" />
+              <span>Blockchain Integration</span>
             </CardTitle>
-            <CardDescription>Real-time system performance metrics</CardDescription>
+            <CardDescription>Multi-chain wallet and transaction support</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <span className="text-sm">CPU Usage</span>
+                <span className="text-sm">Ethereum</span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/4 h-2 bg-green-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">25%</span>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <Badge variant="default" className="bg-blue-100 text-blue-800">Supported</Badge>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm">Memory Usage</span>
+                <span className="text-sm">Base Chain</span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/2 h-2 bg-blue-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">50%</span>
+                  <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                  <Badge variant="default" className="bg-blue-100 text-blue-800">Supported</Badge>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm">Network Traffic</span>
+                <span className="text-sm">Solana</span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-1/3 h-2 bg-purple-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">33%</span>
+                  <div className="w-3 h-3 bg-purple-500 rounded-full"></div>
+                  <Badge variant="default" className="bg-purple-100 text-purple-800">Supported</Badge>
                 </div>
               </div>
 
               <div className="flex items-center justify-between">
-                <span className="text-sm">Storage Usage</span>
+                <span className="text-sm">Wallet Connect</span>
                 <div className="flex items-center space-x-2">
-                  <div className="w-20 h-2 bg-gray-200 rounded-full">
-                    <div className="w-3/5 h-2 bg-orange-500 rounded-full"></div>
-                  </div>
-                  <span className="text-sm font-medium">60%</span>
+                  <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                  <Badge variant="default" className="bg-green-100 text-green-800">Integrated</Badge>
                 </div>
               </div>
             </div>
-            <Button className="w-full mt-4 bg-transparent" variant="outline">
-              View Detailed Metrics
+            <Button className="w-full mt-4 bg-transparent" variant="outline" disabled>
+              Production Blockchain Features
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Intelligence Dashboard */}
+      {/* Production Architecture */}
       <Card>
         <CardHeader>
-          <CardTitle>Intelligence Dashboard</CardTitle>
-          <CardDescription>Business intelligence and analytics overview</CardDescription>
+          <CardTitle>Production Architecture Overview</CardTitle>
+          <CardDescription>Chimpanion V1 technical implementation</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center p-4 border rounded-lg">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Eye className="h-6 w-6 text-blue-600" />
+              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Globe className="h-6 w-6 text-green-600" />
               </div>
-              <h3 className="font-semibold">Data Analysis</h3>
-              <p className="text-sm text-gray-600 mt-1">Advanced pattern recognition</p>
+              <h3 className="font-semibold">Vercel Deployment</h3>
+              <p className="text-sm text-gray-600 mt-1">Web platform live in production</p>
             </div>
 
             <div className="text-center p-4 border rounded-lg">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-2">
-                <Shield className="h-6 w-6 text-green-600" />
+              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-2">
+                <Smartphone className="h-6 w-6 text-blue-600" />
               </div>
-              <h3 className="font-semibold">Threat Detection</h3>
-              <p className="text-sm text-gray-600 mt-1">Real-time security monitoring</p>
+              <h3 className="font-semibold">iOS TestFlight</h3>
+              <p className="text-sm text-gray-600 mt-1">Beta mobile app on Apple platform</p>
             </div>
 
             <div className="text-center p-4 border rounded-lg">
               <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-2">
                 <Bot className="h-6 w-6 text-purple-600" />
               </div>
-              <h3 className="font-semibold">AI Insights</h3>
-              <p className="text-sm text-gray-600 mt-1">Machine learning analytics</p>
+              <h3 className="font-semibold">ElizaOS Framework</h3>
+              <p className="text-sm text-gray-600 mt-1">AI agent powering natural language chat</p>
             </div>
           </div>
         </CardContent>

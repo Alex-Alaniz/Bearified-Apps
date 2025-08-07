@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useAuth } from "@/lib/privy-auth-context"
 import { getAccessibleApps, getAccessibleAdminApps, type AppConfig } from "@/lib/app-configs"
 import { Button } from "@/components/ui/button"
@@ -19,6 +19,26 @@ export function AppSwitcher() {
   const { user } = useAuth()
   const isAdmin = user?.role === "admin" || user?.role === "super_admin"
   const [open, setOpen] = useState(false)
+  const [dbApps, setDbApps] = useState([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    const fetchApps = async () => {
+      try {
+        const response = await fetch('/api/apps')
+        if (response.ok) {
+          const data = await response.json()
+          setDbApps(data.apps || [])
+        }
+      } catch (error) {
+        console.error('Error fetching apps:', error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchApps()
+  }, [])
 
   if (!user) return null
 
@@ -26,8 +46,20 @@ export function AppSwitcher() {
   const accessibleAdminApps = isAdmin ? getAccessibleAdminApps(user.roles || [user.role]) : []
   const allApps = [...accessibleApps, ...accessibleAdminApps]
 
-  // Show all apps but grey out inaccessible ones for users without roles
-  const allPossibleApps: AppConfig[] = [
+  // Convert database apps to AppConfig format and merge with hardcoded fallbacks
+  const dbAppsFormatted = dbApps.map(app => ({
+    id: app.slug,
+    name: app.name,
+    description: app.description,
+    icon: app.icon || "Grid3X3",
+    href: `/dashboard/${app.slug}`,
+    color: app.color || "from-gray-500 to-gray-600",
+    requiredRoles: app.required_roles || [],
+    isActive: app.is_active,
+  }))
+
+  // Hardcoded fallback apps
+  const fallbackApps: AppConfig[] = [
     {
       id: "solebrew",
       name: "SoleBrew",
@@ -49,6 +81,16 @@ export function AppSwitcher() {
       isActive: true,
     },
   ]
+
+  // Merge database apps with fallbacks, preferring database apps
+  const allPossibleApps = [...dbAppsFormatted]
+  
+  // Add fallback apps if they don't exist in database
+  fallbackApps.forEach(fallbackApp => {
+    if (!dbAppsFormatted.find(dbApp => dbApp.id === fallbackApp.id)) {
+      allPossibleApps.push(fallbackApp)
+    }
+  })
 
   if (isAdmin) {
     allPossibleApps.push({

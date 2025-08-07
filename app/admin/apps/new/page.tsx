@@ -83,11 +83,26 @@ export default function NewApp() {
     requiredRoles: [] as string[],
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Here you would typically save to database
-    console.log("Creating new app:", formData)
-    router.push("/admin/apps")
+    
+    try {
+      const response = await fetch('/api/admin/apps', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      if (response.ok) {
+        router.push("/admin/apps")
+      } else {
+        console.error('Failed to create app')
+      }
+    } catch (error) {
+      console.error('Error creating app:', error)
+    }
   }
 
   const handleFeatureToggle = (feature: string) => {
