@@ -246,7 +246,7 @@ export default function EditUser() {
     )
   }
 
-  const availableRoles = ["user", "admin", "super_admin", "solebrew-admin", "chimpanion-admin"]
+  const availableRoles = ["user", "admin", "super_admin", "solebrew-admin", "solebrew-member", "chimpanion-admin", "chimpanion-member"]
   const availableApps = ["SoleBrew", "Chimpanion", "Admin Panel"]
 
   return (

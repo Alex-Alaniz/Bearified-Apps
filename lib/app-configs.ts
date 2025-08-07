@@ -6,6 +6,7 @@ export interface AppConfig {
   color: string
   href: string
   requiredRole?: "super_admin" | "admin" | "user"
+  requiredRoles?: string[]
   features: string[]
   status: "production" | "development" | "beta"
   isActive: boolean
@@ -15,12 +16,13 @@ export const APP_CONFIGS: AppConfig[] = [
   {
     id: "solebrew",
     name: "SoleBrew",
-    description: "Premium coffee shop management app preparing for Believe App launch",
+    description: "Coffee & Sneaker Marketplace powered by Solana SPL tokens",
     icon: "Coffee",
     color: "from-amber-500 to-orange-600",
     href: "/dashboard/solebrew",
-    features: ["Inventory Management", "Sales Analytics", "Customer Loyalty", "Believe App Integration"],
-    status: "beta",
+    requiredRoles: ["super_admin", "admin", "solebrew-admin", "solebrew-member"],
+    features: ["Coffee Ordering", "Sneaker Marketplace", "Solana Integration", "$SOLE Token", "NFT Receipts"],
+    status: "development",
     isActive: true,
   },
   {
@@ -28,8 +30,9 @@ export const APP_CONFIGS: AppConfig[] = [
     name: "Chimpanion",
     description: "Blockchain AI companion app for managing crypto wallets through natural language",
     icon: "Bot",
-    color: "from-green-500 to-teal-600",
+    color: "from-purple-500 to-pink-600",
     href: "/dashboard/chimpanion",
+    requiredRoles: ["super_admin", "admin", "chimpanion-admin", "chimpanion-member"],
     features: ["AI Wallet Management", "Natural Language Interface", "Multi-Chain Support", "Portfolio Analytics"],
     status: "production",
     isActive: true,
@@ -50,13 +53,24 @@ export const APP_CONFIGS: AppConfig[] = [
 
 // Helper functions for role-based access
 export function getAccessibleApps(userRoles: string[]): AppConfig[] {
-  return APP_CONFIGS.filter(app => 
-    app.isActive && 
-    (!app.requiredRole || 
-     userRoles.includes(app.requiredRole) || 
-     userRoles.includes("admin") || 
-     userRoles.includes("super_admin"))
-  )
+  return APP_CONFIGS.filter(app => {
+    if (!app.isActive) return false
+    
+    // Check old requiredRole field for backwards compatibility
+    if (app.requiredRole) {
+      return userRoles.includes(app.requiredRole) || 
+             userRoles.includes("admin") || 
+             userRoles.includes("super_admin")
+    }
+    
+    // Check new requiredRoles array
+    if (app.requiredRoles && app.requiredRoles.length > 0) {
+      return app.requiredRoles.some(role => userRoles.includes(role))
+    }
+    
+    // If no roles specified, app is accessible to all
+    return true
+  })
 }
 
 export function getAccessibleAdminApps(userRoles: string[]): AppConfig[] {
