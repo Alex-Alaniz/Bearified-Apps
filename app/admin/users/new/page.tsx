@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
-import { ArrowLeft, Save, User, Mail, Shield, Apps } from "lucide-react"
+import { ArrowLeft, Save, User, Mail, Shield, AppWindow } from "lucide-react"
 
 interface NewUserForm {
   email: string
@@ -192,7 +192,7 @@ export default function NewUser() {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center space-x-2">
-                  <Apps className="h-5 w-5" />
+                  <AppWindow className="h-5 w-5" />
                   <span>App Access</span>
                 </CardTitle>
                 <CardDescription>Grant access to specific applications</CardDescription>
