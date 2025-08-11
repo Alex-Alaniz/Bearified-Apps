@@ -68,7 +68,7 @@ export default function UserManagement() {
           <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
           <p className="text-muted-foreground">Manage users, roles, and permissions across all applications</p>
         </div>
-        <Button>
+        <Button onClick={() => router.push('/admin/users/new')}>
           <Plus className="mr-2 h-4 w-4" />
           Add New User
         </Button>
