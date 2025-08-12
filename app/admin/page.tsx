@@ -24,30 +24,48 @@ export default function AdminDashboard() {
   const router = useRouter()
   const { user } = useAuth()
   const [userCount, setUserCount] = useState(0)
+  const [appCount, setAppCount] = useState(0)
+  const [activeAppCount, setActiveAppCount] = useState(0)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Fetch user count from Supabase
-    const fetchUserCount = async () => {
+    // Fetch stats from APIs
+    const fetchStats = async () => {
       try {
-        const response = await fetch('/api/admin/stats')
-        if (response.ok) {
-          const data = await response.json()
-          setUserCount(data.userCount || 1) // At least show current user
+        // Fetch user count
+        const userResponse = await fetch('/api/admin/stats')
+        if (userResponse.ok) {
+          const userData = await userResponse.json()
+          setUserCount(userData.userCount || 1) // At least show current user
+        }
+
+        // Fetch app count
+        const appResponse = await fetch('/api/admin/apps')
+        if (appResponse.ok) {
+          const appData = await appResponse.json()
+          const apps = appData.apps || []
+          setAppCount(apps.length)
+          setActiveAppCount(apps.filter(app => app.status === 'production' || app.status === 'beta').length)
+        } else {
+          // Fallback to APP_CONFIGS if API fails
+          setAppCount(APP_CONFIGS.length)
+          setActiveAppCount(APP_CONFIGS.filter(app => app.status === 'production' || app.status === 'beta').length)
         }
       } catch (error) {
-        console.error('Failed to fetch user stats:', error)
+        console.error('Failed to fetch stats:', error)
         setUserCount(1) // Fallback to at least current user
+        setAppCount(APP_CONFIGS.length)
+        setActiveAppCount(APP_CONFIGS.filter(app => app.status === 'production' || app.status === 'beta').length)
       } finally {
         setLoading(false)
       }
     }
 
-    fetchUserCount()
+    fetchStats()
   }, [])
 
-  const totalApps = APP_CONFIGS.length
-  const activeApps = APP_CONFIGS.filter((app) => app.status === "production" || app.status === "beta").length
+  const totalApps = appCount
+  const activeApps = activeAppCount
   const totalUsers = userCount
   const activeUsers = userCount // All authenticated users are considered active
 
