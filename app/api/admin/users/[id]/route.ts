@@ -13,23 +13,50 @@ export async function GET(
   try {
     const userId = params.id
 
-    // For now, handle the special case of the current Privy user (ID: 999)
+    // For Privy user, fetch from Supabase by email
     if (userId === "999") {
-      return NextResponse.json({
-        success: true,
-        user: {
-          id: "999",
-          email: "alex@alexalaniz.com", // This would come from Privy in production
-          name: "Alex Alaniz",
-          roles: ["super_admin", "admin", "user"],
-          apps: ["SoleBrew", "Chimpanion", "Admin Panel"],
-          status: "active",
-          linkedAccounts: {
-            phone: null,
-            wallet: null
+      const { data: privyUser, error: privyError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', 'alex@alexalaniz.com')
+        .single()
+
+      if (privyUser) {
+        return NextResponse.json({
+          success: true,
+          user: {
+            id: "999",
+            email: privyUser.email,
+            name: privyUser.name || "Alex Alaniz",
+            roles: privyUser.roles || ["super_admin", "admin", "user"],
+            apps: privyUser.apps || ["SoleBrew", "Chimpanion", "Admin Panel"],
+            status: privyUser.status || "active",
+            lastLogin: "Just now",
+            linkedAccounts: privyUser.linked_accounts || {
+              phone: null,
+              wallet: null
+            }
           }
-        }
-      })
+        })
+      } else {
+        // Return default data for new Privy user
+        return NextResponse.json({
+          success: true,
+          user: {
+            id: "999",
+            email: "alex@alexalaniz.com",
+            name: "Alex Alaniz",
+            roles: ["super_admin", "admin", "user"],
+            apps: ["SoleBrew", "Chimpanion", "Admin Panel"],
+            status: "active",
+            lastLogin: "Just now",
+            linkedAccounts: {
+              phone: null,
+              wallet: null
+            }
+          }
+        })
+      }
     }
 
     // In production, fetch from Supabase users table
@@ -71,10 +98,6 @@ export async function PUT(
 
     // For Privy users, we need to handle account linking differently
     if (userId === "999") {
-      // In production, you would:
-      // 1. Update user profile in Supabase
-      // 2. Handle Privy account linking for phone/wallet
-      
       console.log('Updating Privy user:', {
         userId,
         name,
@@ -84,30 +107,67 @@ export async function PUT(
         linkedAccounts
       })
 
-      // Handle phone linking with Privy
-      if (linkedAccounts?.phone) {
-        console.log('Would link phone via Privy API:', linkedAccounts.phone)
-        // await privyClient.linkPhone(userId, linkedAccounts.phone)
-      }
+      // First, check if user exists in Supabase
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', 'alex@alexalaniz.com')
+        .single()
 
-      // Handle wallet linking with Privy
-      if (linkedAccounts?.wallet) {
-        console.log('Would link wallet via Privy API:', linkedAccounts.wallet)
-        // await privyClient.linkWallet(userId, linkedAccounts.wallet)
-      }
+      if (existingUser) {
+        // Update existing user
+        const { data: updatedUser, error: updateError } = await supabase
+          .from('users')
+          .update({
+            name,
+            roles,
+            apps,
+            status,
+            linked_accounts: linkedAccounts,
+            updated_at: new Date().toISOString()
+          })
+          .eq('email', 'alex@alexalaniz.com')
+          .select()
+          .single()
 
-      return NextResponse.json({
-        success: true,
-        message: 'User updated successfully',
-        user: {
-          id: userId,
-          name,
-          roles,
-          apps,
-          status,
-          linkedAccounts
+        if (updateError) {
+          console.error('Error updating Privy user:', updateError)
+          throw new Error(`Failed to update user: ${updateError.message}`)
         }
-      })
+
+        return NextResponse.json({
+          success: true,
+          message: 'User updated successfully',
+          user: updatedUser
+        })
+      } else {
+        // Create new user record for Privy user
+        const { data: newUser, error: createError } = await supabase
+          .from('users')
+          .insert({
+            email: 'alex@alexalaniz.com',
+            name,
+            roles,
+            apps,
+            status,
+            linked_accounts: linkedAccounts,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString()
+          })
+          .select()
+          .single()
+
+        if (createError) {
+          console.error('Error creating Privy user record:', createError)
+          throw new Error(`Failed to create user record: ${createError.message}`)
+        }
+
+        return NextResponse.json({
+          success: true,
+          message: 'User created and updated successfully',
+          user: newUser
+        })
+      }
     }
 
     // Update user in Supabase

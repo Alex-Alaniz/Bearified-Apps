@@ -30,11 +30,31 @@ async function authenticatePrivyUser(privyUser: any, fallbackEmail: string): Pro
     
     const userEmail = emailAccount?.address || fallbackEmail
 
-    // For Privy authentication, always create user from Privy data
-    // Don't fall back to mock auth for any users when using Privy
+    // Try to fetch user data from database first
+    try {
+      const response = await fetch('/api/admin/users/999')
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.user) {
+          // Use database roles and apps if available
+          const userData: User = {
+            id: privyUser.id,
+            email: userEmail,
+            name: data.user.name || userEmail.split("@")[0] || phoneAccount?.number || "User",
+            role: data.user.roles?.includes("super_admin") ? "super_admin" : 
+                  data.user.roles?.includes("admin") ? "admin" : "user",
+            roles: data.user.roles || ["user"],
+            apps: data.user.apps || [],
+            isAuthenticated: true
+          }
+          return userData
+        }
+      }
+    } catch (fetchError) {
+      console.log("Could not fetch user data from database, using defaults")
+    }
 
-    // Create user profile from Privy data
-    // Check if this is the super admin email to assign proper role
+    // Fallback to default roles if database fetch fails
     const isSuperAdmin = userEmail === "alex@alexalaniz.com"
     
     const userData: User = {
