@@ -13,7 +13,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/privy-auth-context"
-import { ArrowLeft, Save, User, Phone, Wallet, Shield, Apps, Plus, Trash2, Link } from "lucide-react"
+import { ArrowLeft, Save, User, Phone, Wallet, Shield, AppWindow, Plus, Trash2, Link } from "lucide-react"
 
 interface UserProfile {
   id: string
@@ -475,7 +475,7 @@ export default function EditUser() {
                 <Card>
                   <CardHeader>
                     <CardTitle className="flex items-center space-x-2">
-                      <Apps className="h-5 w-5" />
+                      <AppWindow className="h-5 w-5" />
                       <span>App Access</span>
                     </CardTitle>
                     <CardDescription>Grant access to specific applications</CardDescription>
