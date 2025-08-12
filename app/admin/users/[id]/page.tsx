@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter, useParams } from "next/navigation"
+import { useRouter, useParams, useSearchParams } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -35,11 +35,15 @@ interface UserProfile {
 export default function EditUser() {
   const router = useRouter()
   const params = useParams()
+  const searchParams = useSearchParams()
   const { user: currentUser } = useAuth()
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [newPhone, setNewPhone] = useState("")
   const [newWallet, setNewWallet] = useState("")
+  
+  // Get the initial tab from URL params
+  const initialTab = searchParams.get('tab') || 'profile'
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -270,7 +274,7 @@ export default function EditUser() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* User Profile */}
         <div className="lg:col-span-2 space-y-6">
-          <Tabs defaultValue="profile" className="space-y-4">
+          <Tabs defaultValue={initialTab} className="space-y-4">
             <TabsList>
               <TabsTrigger value="profile">Profile</TabsTrigger>
               <TabsTrigger value="accounts">Linked Accounts</TabsTrigger>
