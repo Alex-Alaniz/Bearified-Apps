@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextResponse } from 'next/server'
+import { APP_CONFIGS } from '@/lib/app-configs'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,19 +9,12 @@ const supabase = createClient(
 
 export async function GET() {
   try {
-    // Get all apps from the database
-    const { data: apps, error } = await supabase
-      .from('apps')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      throw new Error(`Failed to fetch apps: ${error.message}`)
-    }
-
+    // For now, return APP_CONFIGS since we don't have an apps table yet
+    // In the future, we could try to fetch from database first and fall back to APP_CONFIGS
+    
     return NextResponse.json({
       success: true,
-      apps: apps || []
+      apps: APP_CONFIGS
     })
 
   } catch (error) {

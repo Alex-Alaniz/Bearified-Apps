@@ -29,16 +29,22 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 export default function AppManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [apps, setApps] = useState([])
+  const [users, setUsers] = useState([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
   useEffect(() => {
-    const fetchApps = async () => {
+    const fetchData = async () => {
       try {
-        const response = await fetch('/api/admin/apps')
-        if (response.ok) {
-          const data = await response.json()
-          const appsWithIcons = data.apps.map(app => ({
+        // Fetch apps and users in parallel
+        const [appsResponse, usersResponse] = await Promise.all([
+          fetch('/api/admin/apps'),
+          fetch('/api/admin/users')
+        ])
+        
+        if (appsResponse.ok) {
+          const appsData = await appsResponse.json()
+          const appsWithIcons = appsData.apps.map(app => ({
             ...app,
             version: "1.0.0",
             icon: app.icon === "Coffee" ? Coffee : app.icon === "Shield" ? Shield : Settings,
@@ -60,27 +66,46 @@ export default function AppManagement() {
           }))
           setApps(fallbackApps)
         }
-      } catch (error) {
-        console.error('Error fetching apps:', error)
-        // Fallback to APP_CONFIGS on error
-        const fallbackApps = APP_CONFIGS.map(app => ({
-          ...app,
-          version: "1.0.0",
-          icon: app.icon === "Coffee" ? Coffee : app.icon === "Shield" ? Shield : Settings,
-          color: app.color.includes("amber") ? "#f59e0b" : 
-                 app.color.includes("green") ? "#10b981" : 
-                 app.color.includes("purple") ? "#8b5cf6" : "#6b7280"
-        }))
-        setApps(fallbackApps)
+        
+        if (usersResponse.ok) {
+          const usersData = await usersResponse.json()
+          setUsers(usersData.users || [])
+        }
       } finally {
         setLoading(false)
       }
     }
 
-    fetchApps()
+    fetchData()
   }, [])
 
   const allApps = apps
+
+  // Function to count users for a specific app based on roles
+  const getUserCountForApp = (appId: string) => {
+    if (!users.length) return 0
+    
+    return users.filter(user => {
+      const userRoles = user.roles || []
+      
+      // Super admin and admin have access to all apps
+      if (userRoles.includes('super_admin') || userRoles.includes('admin')) {
+        return true
+      }
+      
+      // Check app-specific roles
+      switch (appId) {
+        case 'solebrew':
+          return userRoles.some(role => role.includes('solebrew'))
+        case 'chimpanion':
+          return userRoles.some(role => role.includes('chimpanion'))
+        case 'admin':
+          return false // Only admin/super_admin counted above
+        default:
+          return false
+      }
+    }).length
+  }
 
   const filteredApps = allApps.filter(
     (app) =>
@@ -200,7 +225,7 @@ export default function AppManagement() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">25</div>
+            <div className="text-2xl font-bold">{users.length}</div>
             <p className="text-xs text-muted-foreground">Across all apps</p>
           </CardContent>
         </Card>
@@ -268,7 +293,7 @@ export default function AppManagement() {
                   </TableCell>
                   <TableCell>
                     <span className="font-medium">
-                      {app.id === "solebrew" ? "12" : app.id === "chimpanion" ? "8" : "5"}
+                      {getUserCountForApp(app.id)}
                     </span>
                   </TableCell>
                   <TableCell>
