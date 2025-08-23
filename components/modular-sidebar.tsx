@@ -1,6 +1,6 @@
 "use client"
 
-import { Coffee, Bot, Home, Users, BarChart3, Settings, LogOut, Moon, Sun } from "lucide-react"
+import { Coffee, Bot, Home, Users, BarChart3, Settings, LogOut, Globe, Package } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -20,18 +20,20 @@ import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { ThemeToggleSimple } from "@/components/theme-toggle"
+import { getAccessibleApps } from "@/lib/app-configs"
 
-const navigation = [
+const iconMap = {
+  Coffee,
+  Bot,
+  Settings,
+  Globe,
+  Package,
+}
+
+const staticNavigation = [
   {
     title: "Overview",
     items: [{ title: "Dashboard", url: "/dashboard", icon: Home }],
-  },
-  {
-    title: "Applications",
-    items: [
-      { title: "SoleBrew", url: "/dashboard/solebrew", icon: Coffee },
-      { title: "Chimpanion", url: "/dashboard/chimpanion", icon: Bot },
-    ],
   },
   {
     title: "Administration",
@@ -47,7 +49,28 @@ export function ModularSidebar() {
   const { user, logout } = useAuth()
   const pathname = usePathname()
 
-  const isAdmin = user?.role === "super_admin" || user?.role === "admin"
+  const userRoles = user?.roles || []
+  const isAdmin = userRoles.includes('super_admin') || userRoles.includes('admin')
+  
+  // Get accessible apps dynamically
+  const accessibleApps = getAccessibleApps(userRoles).filter(app => app.id !== 'admin')
+  
+  // Create dynamic applications section
+  const applicationsSection = {
+    title: "Applications",
+    items: accessibleApps.map(app => ({
+      title: app.name,
+      url: app.href,
+      icon: iconMap[app.icon as keyof typeof iconMap] || Settings,
+    })),
+  }
+  
+  // Combine static navigation with dynamic applications
+  const navigation = [
+    staticNavigation[0], // Overview
+    ...(applicationsSection.items.length > 0 ? [applicationsSection] : []), // Applications (if any)
+    staticNavigation[1], // Administration
+  ]
 
   return (
     <Sidebar>
@@ -70,16 +93,19 @@ export function ModularSidebar() {
               <SidebarMenu>
                 {section.items
                   .filter((item) => !item.adminOnly || isAdmin)
-                  .map((item) => (
-                    <SidebarMenuItem key={item.title}>
-                      <SidebarMenuButton asChild isActive={pathname === item.url}>
-                        <Link href={item.url}>
-                          <item.icon className="h-4 w-4" />
-                          <span>{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  ))}
+                  .map((item) => {
+                    const IconComponent = item.icon
+                    return (
+                      <SidebarMenuItem key={item.title}>
+                        <SidebarMenuButton asChild isActive={pathname === item.url}>
+                          <Link href={item.url}>
+                            <IconComponent className="h-4 w-4" />
+                            <span>{item.title}</span>
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    )
+                  })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
