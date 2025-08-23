@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import { NextRequest, NextResponse } from 'next/server'
+import { fetchPrivyUser } from '@/lib/privy-server'
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -96,36 +97,37 @@ export async function GET(
       }, { status: 404 })
     }
 
-    // Extract phone and wallet from user data
+    // Get real-time data from Privy for users with Privy IDs
     let phone = null
     let wallet = null
     let displayEmail = user.email
     
-    // Check if this is a phone user
-    if (user.email?.startsWith('phone_') && user.email?.endsWith('@privy.user')) {
-      // Extract phone number from email format: phone_14076698510@privy.user
+    if (user.id.startsWith('did:privy:')) {
+      const privyData = await fetchPrivyUser(user.id)
+      if (privyData) {
+        phone = privyData.phone
+        wallet = privyData.wallet
+        // Use real email from Privy if available, otherwise use our stored email
+        if (privyData.email) {
+          displayEmail = privyData.email
+        }
+      }
+    }
+    
+    // Fallback: Extract from our stored email format if Privy data not available
+    if (!phone && user.email?.startsWith('phone_') && user.email?.endsWith('@privy.user')) {
       const phoneDigits = user.email.replace('phone_', '').replace('@privy.user', '')
-      // Format phone number nicely
       if (phoneDigits.length === 11 && phoneDigits.startsWith('1')) {
-        // US phone number format
         phone = `+${phoneDigits.slice(0,1)} ${phoneDigits.slice(1,4)} ${phoneDigits.slice(4,7)} ${phoneDigits.slice(7)}`
       } else {
         phone = `+${phoneDigits}`
       }
-      displayEmail = null // Phone users don't have a real email
+      displayEmail = null
     }
     
-    // Check if this is a wallet user
-    if (user.email?.startsWith('wallet_') && user.email?.endsWith('@privy.user')) {
-      // Extract wallet from email format: wallet_0x1234abcd@privy.user
+    if (!wallet && user.email?.startsWith('wallet_') && user.email?.endsWith('@privy.user')) {
       wallet = user.email.replace('wallet_', '').replace('@privy.user', '')
-      displayEmail = null // Wallet users don't have a real email
-    }
-    
-    // Also check if wallet is encoded in the name field
-    const walletMatch = user.name?.match(/\[0x[a-fA-F0-9]{40}\]/)
-    if (walletMatch) {
-      wallet = walletMatch[0].slice(1, -1) // Remove brackets
+      displayEmail = null
     }
 
     return NextResponse.json({
@@ -142,7 +144,8 @@ export async function GET(
           if (app === "Chimpanion" && (user.roles?.includes("chimpanion") || user.roles?.includes("chimpanion-admin") || user.roles?.includes("chimpanion-member"))) return true
           return false
         }),
-        status: user.roles?.length > 0 ? "active" : "pending",
+        // Check if status is stored in avatar field (workaround for missing status column)
+        status: user.avatar?.startsWith('status:') ? user.avatar.replace('status:', '') : (user.roles?.length > 0 ? "active" : "pending"),
         linkedAccounts: {
           email: displayEmail,
           phone: phone,
@@ -194,6 +197,8 @@ export async function PUT(
           .update({
             name,
             roles,
+            // Store status in avatar field as workaround for missing status column
+            avatar: status ? `status:${status}` : existingUser.avatar,
             updated_at: new Date().toISOString()
           })
           .eq('email', 'alex@alexalaniz.com')
@@ -267,6 +272,8 @@ export async function PUT(
       .update({
         name,
         roles,
+        // Store status in avatar field as workaround for missing status column
+        avatar: status ? `status:${status}` : null,
         updated_at: new Date().toISOString()
       })
     
@@ -305,7 +312,8 @@ export async function PUT(
           if (app === "Chimpanion" && (user.roles?.includes("chimpanion") || user.roles?.includes("chimpanion-admin") || user.roles?.includes("chimpanion-member"))) return true
           return false
         }),
-        status: user.roles?.length > 0 ? "active" : "pending",
+        // Use stored status from avatar field, or compute from roles
+        status: user.avatar?.startsWith('status:') ? user.avatar.replace('status:', '') : (user.roles?.length > 0 ? "active" : "pending"),
         linkedAccounts: linkedAccounts || {
           phone: null,
           wallet: null
