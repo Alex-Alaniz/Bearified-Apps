@@ -23,9 +23,16 @@ export async function GET() {
       })
     }
 
+    // Transform users to include computed status
+    const transformedUsers = (users || []).map(user => ({
+      ...user,
+      // Compute status same way as individual user page
+      status: user.avatar?.startsWith('status:') ? user.avatar.replace('status:', '') : (user.roles?.length > 0 ? 'active' : 'pending')
+    }))
+
     return NextResponse.json({
       success: true,
-      users: users || []
+      users: transformedUsers
     })
 
   } catch (error) {

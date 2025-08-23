@@ -41,7 +41,8 @@ export default function UserManagement() {
               phone: user.phone,
               avatar: user.avatar || "/placeholder.svg?height=40&width=40&text=" + (user.name || user.email || 'U').charAt(0).toUpperCase(),
               roles: user.roles || [],
-              status: user.roles?.length > 0 ? "active" : "pending",
+              // Use same status logic as individual user page - check avatar field first
+              status: user.avatar?.startsWith('status:') ? user.avatar.replace('status:', '') : (user.roles?.length > 0 ? "active" : "pending"),
               lastLogin: user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : "Never",
               apps: ["SoleBrew", "Chimpanion", "Admin Panel"].filter(app => {
                 // Filter apps based on user roles
