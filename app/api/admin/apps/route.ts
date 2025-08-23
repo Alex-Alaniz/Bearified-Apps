@@ -48,16 +48,13 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
-    // For now, since we don't have an apps table, we'll simulate success
-    // In production, you would add the app to APP_CONFIGS programmatically
-    // or store in a database table
-    
+    // Create the app configuration
     const newApp = {
       id: slug,
       name,
       description,
-      icon,
-      color,
+      icon: icon || 'Package',
+      color: color || 'from-blue-500 to-purple-600',
       href: `/dashboard/${slug}`,
       requiredRoles: requiredRoles || [`${slug}-admin`, `${slug}-member`],
       features: features || [],
@@ -66,19 +63,45 @@ export async function POST(request: Request) {
       created_at: new Date().toISOString()
     }
 
-    // TODO: Add app to APP_CONFIGS or database
-    console.log('New app would be created:', newApp)
-    console.log('NOTE: To complete onboarding, add this app to lib/app-configs.ts')
-
-    return NextResponse.json({
-      success: true,
-      message: 'Application configuration generated. Please add to APP_CONFIGS to activate.',
-      app: newApp,
-      instructions: {
-        step1: 'Add the following configuration to lib/app-configs.ts',
-        config: newApp
+    try {
+      // Add app to APP_CONFIGS using the script
+      const { exec } = require('child_process')
+      const util = require('util')
+      const execAsync = util.promisify(exec)
+      
+      const scriptPath = require('path').join(process.cwd(), 'scripts', 'add-app-to-configs.js')
+      const command = `node "${scriptPath}" '${JSON.stringify(newApp)}'`
+      
+      const { stdout, stderr } = await execAsync(command)
+      
+      if (stderr && !stderr.includes('DeprecationWarning')) {
+        throw new Error(stderr)
       }
-    })
+      
+      console.log('✅ App added to APP_CONFIGS:', stdout)
+      
+      return NextResponse.json({
+        success: true,
+        message: 'Application created successfully and added to system configuration.',
+        app: newApp,
+        note: 'Please restart the development server to see the new app in the dashboard.'
+      })
+      
+    } catch (scriptError) {
+      console.error('❌ Error adding app to configs:', scriptError)
+      
+      // Fall back to manual instructions
+      return NextResponse.json({
+        success: true,
+        message: 'Application configuration generated. Manual setup required.',
+        app: newApp,
+        instructions: {
+          step1: 'Add the following configuration to lib/app-configs.ts manually:',
+          config: newApp,
+          error: scriptError.message
+        }
+      })
+    }
 
   } catch (error) {
     console.error('App creation error:', error)

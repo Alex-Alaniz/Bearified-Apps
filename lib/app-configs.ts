@@ -49,6 +49,18 @@ export const APP_CONFIGS: AppConfig[] = [
     status: "production",
     isActive: true,
   },
+  {
+    id: "golf",
+    name: "Golf App",
+    description: "Golf course management and booking system",
+    icon: "Globe",
+    color: "from-green-500 to-blue-600",
+    href: "/dashboard/golf",
+    requiredRoles: ["super_admin", "admin", "golf-admin", "golf-member"],
+    features: ["Course Booking", "Score Tracking", "Tournament Management"],
+    status: "development",
+    isActive: true,
+  },
 ]
 
 // Helper functions for role-based access
