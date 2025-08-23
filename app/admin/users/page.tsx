@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { useRouter } from "next/navigation"
-import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, Shield, Users, UserCheck, UserX, Mail } from "lucide-react"
+import { Plus, Search, Filter, MoreHorizontal, Edit, Trash2, Shield, Users, UserCheck, UserX, Mail, RefreshCw, Phone, Wallet } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAuth } from "@/lib/privy-auth-context"
+import { getUserAuthMethod, getUserSlug, getUserDisplayEmail } from "@/lib/user-utils"
 
 // Users will be loaded from Supabase database
 const mockUsers: any[] = []
@@ -20,28 +21,102 @@ export default function UserManagement() {
   const router = useRouter()
   const { user: currentUser } = useAuth()
   
-  // Combine mock users with the current authenticated user
-  const [allUsers, setAllUsers] = useState(mockUsers)
+  // State for all users from database
+  const [allUsers, setAllUsers] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const [syncing, setSyncing] = useState(false)
   
-  useEffect(() => {
-    if (currentUser) {
-      // Add current user if not already in the list
-      const userExists = mockUsers.some(u => u.email === currentUser.email)
-      if (!userExists) {
-        const currentUserData = {
-          id: 999, // Temporary ID for Privy user
-          name: currentUser.name || "Unknown User",
-          email: currentUser.email || "no-email@bearified.com",
-          avatar: currentUser.avatar || "/placeholder.svg?height=40&width=40&text=U",
-          roles: currentUser.roles || [],
-          status: "active",
-          lastLogin: "Just now",
-          apps: currentUser.apps || [],
+  // Fetch all users from the database
+  const fetchUsers = async () => {
+      try {
+        const response = await fetch('/api/admin/users')
+        if (response.ok) {
+          const data = await response.json()
+          if (data.success && data.users) {
+            // Transform database users to match the UI format
+            const transformedUsers = data.users.map((user: any) => ({
+              id: user.id,
+              name: user.name || user.email?.split('@')[0] || 'User',
+              email: user.email,
+              phone: user.phone,
+              avatar: user.avatar || "/placeholder.svg?height=40&width=40&text=" + (user.name || user.email || 'U').charAt(0).toUpperCase(),
+              roles: user.roles || [],
+              status: user.roles?.length > 0 ? "active" : "pending",
+              lastLogin: user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : "Never",
+              apps: ["SoleBrew", "Chimpanion", "Admin Panel"].filter(app => {
+                // Filter apps based on user roles
+                if (user.roles?.includes("super_admin") || user.roles?.includes("admin")) return true
+                if (app === "SoleBrew" && (user.roles?.includes("solebrew") || user.roles?.includes("solebrew-admin") || user.roles?.includes("solebrew-member"))) return true
+                if (app === "Chimpanion" && (user.roles?.includes("chimpanion") || user.roles?.includes("chimpanion-admin") || user.roles?.includes("chimpanion-member"))) return true
+                return false
+              }),
+            }))
+            setAllUsers(transformedUsers)
+          }
+        } else {
+          // Fallback to showing just the current user
+          if (currentUser) {
+            const currentUserData = {
+              id: "super-admin",
+              name: currentUser.name || "Unknown User",
+              email: currentUser.email || "no-email@bearified.com",
+              avatar: currentUser.avatar || "/placeholder.svg?height=40&width=40&text=U",
+              roles: currentUser.roles || [],
+              status: "active",
+              lastLogin: "Just now",
+              apps: currentUser.apps || [],
+            }
+            setAllUsers([currentUserData])
+          }
         }
-        setAllUsers([currentUserData, ...mockUsers])
+      } catch (error) {
+        console.error('Failed to fetch users:', error)
+        // Fallback to current user
+        if (currentUser) {
+          const currentUserData = {
+            id: "super-admin",
+            name: currentUser.name || "Unknown User",
+            email: currentUser.email || "no-email@bearified.com",
+            avatar: currentUser.avatar || "/placeholder.svg?height=40&width=40&text=U",
+            roles: currentUser.roles || [],
+            status: "active",
+            lastLogin: "Just now",
+            apps: currentUser.apps || [],
+          }
+          setAllUsers([currentUserData])
+        }
+      } finally {
+        setLoading(false)
       }
     }
+  
+  useEffect(() => {
+    fetchUsers()
   }, [currentUser])
+
+  const syncWithPrivy = async () => {
+    setSyncing(true)
+    try {
+      const response = await fetch('/api/privy/allowlist')
+      if (response.ok) {
+        const data = await response.json()
+        console.log('Privy sync results:', data.syncResults)
+        
+        // Refresh the user list
+        await fetchUsers()
+        
+        // Show success message (you could use a toast here)
+        alert(`✅ Synced with Privy allowlist!\n\nCreated: ${data.syncResults.created} new users\nTotal synced: ${data.syncResults.synced}`)
+      } else {
+        alert('Failed to sync with Privy allowlist')
+      }
+    } catch (error) {
+      console.error('Sync error:', error)
+      alert('Error syncing with Privy allowlist')
+    } finally {
+      setSyncing(false)
+    }
+  }
 
   const filteredUsers = allUsers.filter(
     (user) =>
@@ -68,10 +143,20 @@ export default function UserManagement() {
           <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
           <p className="text-muted-foreground">Manage users, roles, and permissions across all applications</p>
         </div>
-        <Button onClick={() => router.push('/admin/users/new')}>
-          <Plus className="mr-2 h-4 w-4" />
-          Add New User
-        </Button>
+        <div className="flex space-x-2">
+          <Button 
+            onClick={syncWithPrivy} 
+            variant="outline"
+            disabled={syncing}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${syncing ? 'animate-spin' : ''}`} />
+            Sync with Privy
+          </Button>
+          <Button onClick={() => router.push('/admin/users/new')}>
+            <Plus className="mr-2 h-4 w-4" />
+            Add New User
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -180,7 +265,12 @@ export default function UserManagement() {
                       </Avatar>
                       <div>
                         <p className="font-medium">{user.name}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
+                        <p className="text-sm text-muted-foreground flex items-center gap-1">
+                          {getUserAuthMethod(user) === 'email' && <Mail className="h-3 w-3" />}
+                          {getUserAuthMethod(user) === 'phone' && <Phone className="h-3 w-3" />}
+                          {getUserAuthMethod(user) === 'wallet' && <Wallet className="h-3 w-3" />}
+                          {getUserDisplayEmail(user)}
+                        </p>
                       </div>
                     </div>
                   </TableCell>
@@ -223,11 +313,11 @@ export default function UserManagement() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => router.push(`/admin/users/${user.id}`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/admin/users/${getUserSlug(user)}`)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit User
                         </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => router.push(`/admin/users/${user.id}?tab=permissions`)}>
+                        <DropdownMenuItem onClick={() => router.push(`/admin/users/${getUserSlug(user)}?tab=permissions`)}>
                           <Shield className="mr-2 h-4 w-4" />
                           Manage Roles
                         </DropdownMenuItem>

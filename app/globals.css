@@ -56,4 +56,133 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Smooth transitions for theme changes */
+  html.dark {
+    color-scheme: dark;
+  }
+  
+  /* Better dark mode colors for specific elements */
+  .dark .bg-blue-50 {
+    @apply bg-blue-950/20;
+  }
+  
+  .dark .bg-green-50 {
+    @apply bg-green-950/20;
+  }
+  
+  .dark .bg-yellow-50 {
+    @apply bg-yellow-950/20;
+  }
+  
+  .dark .bg-red-50 {
+    @apply bg-red-950/20;
+  }
+  
+  .dark .bg-purple-50 {
+    @apply bg-purple-950/20;
+  }
+  
+  .dark .bg-amber-50 {
+    @apply bg-amber-950/20;
+  }
+  
+  /* Background colors 100 */
+  .dark .bg-blue-100 {
+    @apply bg-blue-900/30;
+  }
+  
+  .dark .bg-green-100 {
+    @apply bg-green-900/30;
+  }
+  
+  .dark .bg-yellow-100 {
+    @apply bg-yellow-900/30;
+  }
+  
+  .dark .bg-red-100 {
+    @apply bg-red-900/30;
+  }
+  
+  .dark .bg-purple-100 {
+    @apply bg-purple-900/30;
+  }
+  
+  .dark .bg-amber-100 {
+    @apply bg-amber-900/30;
+  }
+  
+  /* Text colors */
+  .dark .text-blue-700 {
+    @apply text-blue-300;
+  }
+  
+  .dark .text-green-700 {
+    @apply text-green-300;
+  }
+  
+  .dark .text-yellow-700 {
+    @apply text-yellow-300;
+  }
+  
+  .dark .text-red-700 {
+    @apply text-red-300;
+  }
+  
+  .dark .text-purple-700 {
+    @apply text-purple-300;
+  }
+  
+  .dark .text-amber-700 {
+    @apply text-amber-300;
+  }
+  
+  .dark .text-blue-800 {
+    @apply text-blue-300;
+  }
+  
+  .dark .text-green-800 {
+    @apply text-green-300;
+  }
+  
+  .dark .text-yellow-800 {
+    @apply text-yellow-300;
+  }
+  
+  .dark .text-red-800 {
+    @apply text-red-300;
+  }
+  
+  .dark .text-purple-800 {
+    @apply text-purple-300;
+  }
+  
+  .dark .text-amber-800 {
+    @apply text-amber-300;
+  }
+  
+  /* Borders */
+  .dark .border-blue-200 {
+    @apply border-blue-800;
+  }
+  
+  .dark .border-green-200 {
+    @apply border-green-800;
+  }
+  
+  .dark .border-yellow-200 {
+    @apply border-yellow-800;
+  }
+  
+  .dark .border-red-200 {
+    @apply border-red-800;
+  }
+  
+  .dark .border-purple-200 {
+    @apply border-purple-800;
+  }
+  
+  .dark .border-amber-200 {
+    @apply border-amber-800;
+  }
 }

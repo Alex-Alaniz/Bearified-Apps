@@ -36,69 +36,75 @@ interface LogEntry {
 }
 
 // Mock log data - in production this would come from your logging system
-const mockLogs: LogEntry[] = [
-  {
-    id: "1",
-    timestamp: new Date().toISOString(),
-    user: "alex@alexalaniz.com",
-    action: "LOGIN_SUCCESS",
-    resource: "Authentication",
-    details: "Privy authentication successful",
-    level: "success",
-    ip: "192.168.1.1"
-  },
-  {
-    id: "2", 
-    timestamp: new Date(Date.now() - 300000).toISOString(),
-    user: "alex@alexalaniz.com",
-    action: "PROJECT_CREATE",
-    resource: "Projects",
-    details: "Created project: SoleBrew MVP",
-    level: "info",
-    ip: "192.168.1.1"
-  },
-  {
-    id: "3",
-    timestamp: new Date(Date.now() - 600000).toISOString(),
-    user: "alex@alexalaniz.com", 
-    action: "USER_UPDATE",
-    resource: "Users",
-    details: "Updated user roles and permissions",
-    level: "info",
-    ip: "192.168.1.1"
-  },
-  {
-    id: "4",
-    timestamp: new Date(Date.now() - 900000).toISOString(),
-    user: "system",
-    action: "DATABASE_BACKUP",
-    resource: "Database",
-    details: "Daily backup completed successfully",
-    level: "success",
-    ip: "internal"
-  },
-  {
-    id: "5",
-    timestamp: new Date(Date.now() - 1200000).toISOString(),
-    user: "alex@alexalaniz.com",
-    action: "SETTINGS_UPDATE",
-    resource: "System Settings",
-    details: "Updated authentication configuration",
-    level: "warning",
-    ip: "192.168.1.1"
-  }
-]
+const getInitialLogs = (): LogEntry[] => {
+  const now = Date.now()
+  return [
+    {
+      id: "1",
+      timestamp: new Date(now).toISOString(),
+      user: "alex@alexalaniz.com",
+      action: "LOGIN_SUCCESS",
+      resource: "Authentication",
+      details: "Privy authentication successful",
+      level: "success",
+      ip: "192.168.1.1"
+    },
+    {
+      id: "2", 
+      timestamp: new Date(now - 300000).toISOString(),
+      user: "alex@alexalaniz.com",
+      action: "PROJECT_CREATE",
+      resource: "Projects",
+      details: "Created project: SoleBrew MVP",
+      level: "info",
+      ip: "192.168.1.1"
+    },
+    {
+      id: "3",
+      timestamp: new Date(now - 600000).toISOString(),
+      user: "alex@alexalaniz.com", 
+      action: "USER_UPDATE",
+      resource: "Users",
+      details: "Updated user roles and permissions",
+      level: "info",
+      ip: "192.168.1.1"
+    },
+    {
+      id: "4",
+      timestamp: new Date(now - 900000).toISOString(),
+      user: "system",
+      action: "DATABASE_BACKUP",
+      resource: "Database",
+      details: "Daily backup completed successfully",
+      level: "success",
+      ip: "internal"
+    },
+    {
+      id: "5",
+      timestamp: new Date(now - 1200000).toISOString(),
+      user: "alex@alexalaniz.com",
+      action: "SETTINGS_UPDATE",
+      resource: "System Settings",
+      details: "Updated authentication configuration",
+      level: "warning",
+      ip: "192.168.1.1"
+    }
+  ]
+}
 
 export default function ActivityLogsPage() {
   const { user } = useAuth()
-  const [logs, setLogs] = useState<LogEntry[]>(mockLogs)
-  const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>(mockLogs)
+  const [logs, setLogs] = useState<LogEntry[]>([])
+  const [filteredLogs, setFilteredLogs] = useState<LogEntry[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [levelFilter, setLevelFilter] = useState<string>("all")
   const [userFilter, setUserFilter] = useState<string>("all")
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
+    // Initialize logs on client-side only
+    const initialLogs = getInitialLogs()
+    
     // Add current user's recent activity
     const recentActivity: LogEntry = {
       id: "current",
@@ -111,7 +117,7 @@ export default function ActivityLogsPage() {
       ip: "current"
     }
     
-    setLogs(prev => [recentActivity, ...prev.slice(1)])
+    setLogs([recentActivity, ...initialLogs.slice(1)])
   }, [user])
 
   useEffect(() => {
@@ -162,7 +168,18 @@ export default function ActivityLogsPage() {
   }
 
   const formatTimestamp = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString()
+    // Use a consistent format to avoid hydration errors
+    const date = new Date(timestamp)
+    const pad = (num: number) => String(num).padStart(2, '0')
+    
+    const month = pad(date.getMonth() + 1)
+    const day = pad(date.getDate())
+    const year = date.getFullYear()
+    const hours = pad(date.getHours())
+    const minutes = pad(date.getMinutes())
+    const seconds = pad(date.getSeconds())
+    
+    return `${month}/${day}/${year} ${hours}:${minutes}:${seconds}`
   }
 
   const refreshLogs = () => {

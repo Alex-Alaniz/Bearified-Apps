@@ -47,15 +47,17 @@ export default function AdminDashboard() {
           setAppCount(apps.length)
           setActiveAppCount(apps.filter(app => app.status === 'production' || app.status === 'beta').length)
         } else {
-          // Fallback to APP_CONFIGS if API fails
-          setAppCount(APP_CONFIGS.length)
-          setActiveAppCount(APP_CONFIGS.filter(app => app.status === 'production' || app.status === 'beta').length)
+          // Fallback to actual app count (exclude Admin Panel as it's infrastructure)
+          const actualApps = APP_CONFIGS.filter(app => app.id !== 'admin')
+          setAppCount(actualApps.length)
+          setActiveAppCount(actualApps.filter(app => app.status === 'production' || app.status === 'beta').length)
         }
       } catch (error) {
         console.error('Failed to fetch stats:', error)
         setUserCount(1) // Fallback to at least current user
-        setAppCount(APP_CONFIGS.length)
-        setActiveAppCount(APP_CONFIGS.filter(app => app.status === 'production' || app.status === 'beta').length)
+        const actualApps = APP_CONFIGS.filter(app => app.id !== 'admin')
+        setAppCount(actualApps.length)
+        setActiveAppCount(actualApps.filter(app => app.status === 'production' || app.status === 'beta').length)
       } finally {
         setLoading(false)
       }
@@ -152,7 +154,7 @@ export default function AdminDashboard() {
             <CardDescription>Current status of all applications</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            {Object.values(APP_CONFIGS).map((app) => (
+            {Object.values(APP_CONFIGS).filter(app => app.id !== 'admin').map((app) => (
               <div key={app.id} className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <div
@@ -176,22 +178,6 @@ export default function AdminDashboard() {
               </div>
             ))}
 
-            {/* Franchise Portal */}
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-white">
-                  <Apps className="h-4 w-4" />
-                </div>
-                <div>
-                  <p className="font-medium">Franchise Portal</p>
-                  <p className="text-sm text-muted-foreground">v1.0.0</p>
-                </div>
-              </div>
-              <Badge variant="default" className="flex items-center space-x-1">
-                <CheckCircle className="h-3 w-3" />
-                <span>active</span>
-              </Badge>
-            </div>
           </CardContent>
         </Card>
 
@@ -209,7 +195,7 @@ export default function AdminDashboard() {
                   <p className="text-sm text-muted-foreground">Connected to Supabase</p>
                 </div>
               </div>
-              <Badge variant="default" className="bg-green-100 text-green-800">Active</Badge>
+              <Badge variant="default" className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">Active</Badge>
             </div>
             
             <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -220,7 +206,7 @@ export default function AdminDashboard() {
                   <p className="text-sm text-muted-foreground">Automated daily backups</p>
                 </div>
               </div>
-              <Badge variant="default" className="bg-blue-100 text-blue-800">Enabled</Badge>
+              <Badge variant="default" className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">Enabled</Badge>
             </div>
 
             <div className="flex items-center justify-between p-3 border rounded-lg">
@@ -231,7 +217,7 @@ export default function AdminDashboard() {
                   <p className="text-sm text-muted-foreground">Row level security active</p>
                 </div>
               </div>
-              <Badge variant="default" className="bg-purple-100 text-purple-800">Active</Badge>
+              <Badge variant="default" className="bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300">Active</Badge>
             </div>
           </CardContent>
         </Card>

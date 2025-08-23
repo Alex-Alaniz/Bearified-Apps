@@ -32,6 +32,7 @@ import { ChevronUp, User2 } from "lucide-react"
 import { useAuth } from "@/lib/privy-auth-context"
 import { usePrivy } from "@privy-io/react-auth"
 import { useRouter } from "next/navigation"
+import { ThemeToggleSimple } from "@/components/theme-toggle"
 
 // Admin navigation items
 const adminItems = [
@@ -238,6 +239,12 @@ export function AdminSidebar() {
                   <Settings />
                   Settings
                 </DropdownMenuItem>
+                <div className="px-2 py-1 border-t">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">Theme</span>
+                    <ThemeToggleSimple />
+                  </div>
+                </div>
                 <DropdownMenuItem onClick={handleLogout}>
                   <LogOut />
                   Sign out

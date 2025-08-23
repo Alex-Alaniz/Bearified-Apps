@@ -4,6 +4,8 @@ import { Inter } from "next/font/google"
 import "./globals.css"
 import { PrivyWrapper } from "@/components/privy-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { ThemeProvider } from "@/components/theme-provider"
+import { DarkModeShortcut } from "@/components/dark-mode-shortcut"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -19,12 +21,20 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={inter.className}>
-        <PrivyWrapper>
-          {children}
-          <Toaster />
-        </PrivyWrapper>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <PrivyWrapper>
+            <DarkModeShortcut />
+            {children}
+            <Toaster />
+          </PrivyWrapper>
+        </ThemeProvider>
       </body>
     </html>
   )

@@ -13,13 +13,6 @@ export interface User {
 
 export const TEST_USERS: User[] = [
   {
-    id: 1,
-    name: "Admin User",
-    email: "admin@company.com",
-    avatar: "/placeholder.svg?height=40&width=40&text=AU",
-    roles: ["admin", "solebrew-admin", "chimpanion-admin"],
-  },
-  {
     id: 2,
     name: "Sarah Johnson",
     email: "sarah@solebrew.com",
@@ -65,7 +58,7 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined)
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<User>(TEST_USERS[0]) // Default to admin
+  const [currentUser, setCurrentUser] = useState<User>(TEST_USERS[0]) // Default to first user
 
   const switchUser = (userId: number) => {
     const user = TEST_USERS.find((u) => u.id === userId)

@@ -1,6 +1,6 @@
 "use client"
 
-import { Coffee, Bot, Home, Users, BarChart3, Settings, LogOut } from "lucide-react"
+import { Coffee, Bot, Home, Users, BarChart3, Settings, LogOut, Moon, Sun } from "lucide-react"
 import {
   Sidebar,
   SidebarContent,
@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { ThemeToggleSimple } from "@/components/theme-toggle"
 
 const navigation = [
   {
@@ -103,9 +104,12 @@ export function ModularSidebar() {
               <p className="text-xs text-gray-500 truncate">{user?.email}</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" onClick={logout} className="h-8 w-8">
-            <LogOut className="h-4 w-4" />
-          </Button>
+          <div className="flex items-center space-x-1">
+            <ThemeToggleSimple />
+            <Button variant="ghost" size="icon" onClick={logout} className="h-8 w-8">
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </SidebarFooter>
 

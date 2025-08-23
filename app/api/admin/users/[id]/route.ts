@@ -13,8 +13,11 @@ export async function GET(
   try {
     const userId = params.id
 
-    // For Privy user, fetch from Supabase by email
-    if (userId === "999") {
+    // Handle human-readable slugs
+    let actualUserId = userId
+    
+    // For Alex's account (super admin)
+    if (userId === "999" || userId === "super-admin" || userId === "alex") {
       const { data: privyUser, error: privyError } = await supabase
         .from('users')
         .select('*')
@@ -25,14 +28,14 @@ export async function GET(
         return NextResponse.json({
           success: true,
           user: {
-            id: "999",
+            id: "super-admin",
             email: privyUser.email,
             name: privyUser.name || "Alex Alaniz",
             roles: privyUser.roles || ["super_admin", "admin", "user"],
-            apps: privyUser.apps || ["SoleBrew", "Chimpanion", "Admin Panel"],
-            status: privyUser.status || "active",
+            apps: ["SoleBrew", "Chimpanion", "Admin Panel"], // Static for now
+            status: "active", // Static for now
             lastLogin: "Just now",
-            linkedAccounts: privyUser.linked_accounts || {
+            linkedAccounts: {
               phone: null,
               wallet: null
             }
@@ -43,7 +46,7 @@ export async function GET(
         return NextResponse.json({
           success: true,
           user: {
-            id: "999",
+            id: "super-admin",
             email: "alex@alexalaniz.com",
             name: "Alex Alaniz",
             roles: ["super_admin", "admin", "user"],
@@ -59,12 +62,27 @@ export async function GET(
       }
     }
 
-    // In production, fetch from Supabase users table
-    const { data: user, error } = await supabase
-      .from('users')
-      .select('*')
-      .eq('id', userId)
-      .single()
+    // Handle different ID formats
+    let query = supabase.from('users').select('*')
+    
+    if (userId.startsWith('phone-')) {
+      // Phone user slug: phone-1234
+      const lastFourDigits = userId.replace('phone-', '')
+      query = query.like('phone', `%${lastFourDigits}`)
+    } else if (userId.startsWith('wallet-')) {
+      // Wallet user slug: wallet-abc123
+      const firstSixChars = userId.replace('wallet-', '').toLowerCase()
+      query = query.like('name', `%${firstSixChars}%`)
+    } else if (userId.includes('@') && !userId.startsWith('did:privy:')) {
+      // Email-based slug
+      const emailPrefix = userId.replace(/-/g, '.')
+      query = query.like('email', `${emailPrefix}@%`)
+    } else {
+      // Direct ID lookup (Privy DID or database ID)
+      query = query.eq('id', userId)
+    }
+    
+    const { data: user, error } = await query.single()
 
     if (error) {
       return NextResponse.json({
@@ -75,7 +93,21 @@ export async function GET(
 
     return NextResponse.json({
       success: true,
-      user
+      user: {
+        ...user,
+        apps: ["SoleBrew", "Chimpanion", "Admin Panel"].filter(app => {
+          // Filter apps based on user roles
+          if (user.roles?.includes("super_admin") || user.roles?.includes("admin")) return true
+          if (app === "SoleBrew" && (user.roles?.includes("solebrew") || user.roles?.includes("solebrew-admin") || user.roles?.includes("solebrew-member"))) return true
+          if (app === "Chimpanion" && (user.roles?.includes("chimpanion") || user.roles?.includes("chimpanion-admin") || user.roles?.includes("chimpanion-member"))) return true
+          return false
+        }),
+        status: user.roles?.length > 0 ? "active" : "pending",
+        linkedAccounts: {
+          phone: null,
+          wallet: null
+        }
+      }
     })
 
   } catch (error) {
@@ -96,8 +128,8 @@ export async function PUT(
     const body = await request.json()
     const { name, roles, apps, status, linkedAccounts } = body
 
-    // For Privy users, we need to handle account linking differently
-    if (userId === "999") {
+    // For Alex's account (super admin)
+    if (userId === "999" || userId === "super-admin" || userId === "alex") {
       console.log('Updating Privy user:', {
         userId,
         name,
@@ -115,15 +147,12 @@ export async function PUT(
         .single()
 
       if (existingUser) {
-        // Update existing user
+        // Update existing user (only update columns that exist)
         const { data: updatedUser, error: updateError } = await supabase
           .from('users')
           .update({
             name,
             roles,
-            apps,
-            status,
-            linked_accounts: linkedAccounts,
             updated_at: new Date().toISOString()
           })
           .eq('email', 'alex@alexalaniz.com')
@@ -138,19 +167,29 @@ export async function PUT(
         return NextResponse.json({
           success: true,
           message: 'User updated successfully',
-          user: updatedUser
+          user: {
+            id: "super-admin",
+            email: updatedUser.email,
+            name: updatedUser.name,
+            roles: updatedUser.roles,
+            apps: ["SoleBrew", "Chimpanion", "Admin Panel"], // Static for now
+            status: "active", // Static for now
+            lastLogin: "Just now",
+            linkedAccounts: {
+              phone: null,
+              wallet: null
+            }
+          }
         })
       } else {
-        // Create new user record for Privy user
+        // Create new user record for Privy user (only columns that exist)
         const { data: newUser, error: createError } = await supabase
           .from('users')
           .insert({
+            id: 'super-admin-uuid', // Use a fixed ID for the super admin
             email: 'alex@alexalaniz.com',
             name,
             roles,
-            apps,
-            status,
-            linked_accounts: linkedAccounts,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
@@ -165,24 +204,45 @@ export async function PUT(
         return NextResponse.json({
           success: true,
           message: 'User created and updated successfully',
-          user: newUser
+          user: {
+            id: "super-admin",
+            email: newUser.email,
+            name: newUser.name,
+            roles: newUser.roles,
+            apps: ["SoleBrew", "Chimpanion", "Admin Panel"], // Static for now
+            status: "active", // Static for now
+            lastLogin: "Just now",
+            linkedAccounts: {
+              phone: null,
+              wallet: null
+            }
+          }
         })
       }
     }
 
-    // Update user in Supabase
-    const { data: user, error } = await supabase
-      .from('users')
+    // Handle different ID formats for updates
+    let updateQuery = supabase.from('users')
       .update({
         name,
         roles,
-        apps,
-        status,
         updated_at: new Date().toISOString()
       })
-      .eq('id', userId)
-      .select()
-      .single()
+    
+    if (userId.startsWith('phone-')) {
+      const lastFourDigits = userId.replace('phone-', '')
+      updateQuery = updateQuery.like('phone', `%${lastFourDigits}`)
+    } else if (userId.startsWith('wallet-')) {
+      const firstSixChars = userId.replace('wallet-', '').toLowerCase()
+      updateQuery = updateQuery.like('name', `%${firstSixChars}%`)
+    } else if (userId.includes('@') && !userId.startsWith('did:privy:')) {
+      const emailPrefix = userId.replace(/-/g, '.')
+      updateQuery = updateQuery.like('email', `${emailPrefix}@%`)
+    } else {
+      updateQuery = updateQuery.eq('id', userId)
+    }
+    
+    const { data: user, error } = await updateQuery.select().single()
 
     if (error) {
       throw new Error(`Failed to update user: ${error.message}`)
@@ -191,7 +251,21 @@ export async function PUT(
     return NextResponse.json({
       success: true,
       message: 'User updated successfully',
-      user
+      user: {
+        ...user,
+        apps: ["SoleBrew", "Chimpanion", "Admin Panel"].filter(app => {
+          // Filter apps based on user roles
+          if (user.roles?.includes("super_admin") || user.roles?.includes("admin")) return true
+          if (app === "SoleBrew" && (user.roles?.includes("solebrew") || user.roles?.includes("solebrew-admin") || user.roles?.includes("solebrew-member"))) return true
+          if (app === "Chimpanion" && (user.roles?.includes("chimpanion") || user.roles?.includes("chimpanion-admin") || user.roles?.includes("chimpanion-member"))) return true
+          return false
+        }),
+        status: user.roles?.length > 0 ? "active" : "pending",
+        linkedAccounts: linkedAccounts || {
+          phone: null,
+          wallet: null
+        }
+      }
     })
 
   } catch (error) {
@@ -211,18 +285,30 @@ export async function DELETE(
     const userId = params.id
 
     // Prevent deleting the super admin user
-    if (userId === "999") {
+    if (userId === "999" || userId === "super-admin" || userId === "alex") {
       return NextResponse.json({
         success: false,
         error: 'Cannot delete super admin user'
       }, { status: 403 })
     }
 
-    // Delete user from Supabase
-    const { error } = await supabase
-      .from('users')
-      .delete()
-      .eq('id', userId)
+    // Handle different ID formats for deletion
+    let deleteQuery = supabase.from('users').delete()
+    
+    if (userId.startsWith('phone-')) {
+      const lastFourDigits = userId.replace('phone-', '')
+      deleteQuery = deleteQuery.like('phone', `%${lastFourDigits}`)
+    } else if (userId.startsWith('wallet-')) {
+      const firstSixChars = userId.replace('wallet-', '').toLowerCase()
+      deleteQuery = deleteQuery.like('name', `%${firstSixChars}%`)
+    } else if (userId.includes('@') && !userId.startsWith('did:privy:')) {
+      const emailPrefix = userId.replace(/-/g, '.')
+      deleteQuery = deleteQuery.like('email', `${emailPrefix}@%`)
+    } else {
+      deleteQuery = deleteQuery.eq('id', userId)
+    }
+    
+    const { error } = await deleteQuery
 
     if (error) {
       throw new Error(`Failed to delete user: ${error.message}`)

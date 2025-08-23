@@ -25,6 +25,24 @@ export default function DashboardPage() {
     )
   }
 
+  // Check if user has no access
+  if (!user.roles || user.roles.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center space-y-4">
+          <Shield className="h-16 w-16 text-gray-400 mx-auto" />
+          <h2 className="text-2xl font-semibold">Access Pending</h2>
+          <p className="text-gray-600 max-w-md">
+            Your account is pending approval. Please contact an administrator to grant you access to applications.
+          </p>
+          <p className="text-sm text-gray-500">
+            Logged in as: {user.email}
+          </p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-8">
       {/* Welcome Header */}
@@ -48,7 +66,7 @@ export default function DashboardPage() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
+            <CardTitle className="text-sm font-medium">Your Access</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>

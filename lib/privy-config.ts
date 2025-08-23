@@ -59,9 +59,16 @@ export function getPrivyConfig(): PrivyConfig {
     appearance: {
       theme: "light",
       accentColor: "#3B82F6", // Blue accent matching your brand
-      logo: "https://your-domain.com/bearified-logo.svg", // Replace with your actual logo URL
+      logo: "https://github.com/Alex-Alaniz/BearifiedLabs/blob/main/public/images/BearifiedXYZ.png?raw=true",
       showWalletLoginFirst: false,
       walletList: ["metamask", "coinbase_wallet"],
+    },
+
+    // Account linking configuration
+    // This enables users to link additional login methods to their account
+    accountLinking: {
+      enabled: true,
+      allowMultipleAccounts: true,
     },
 
     // Additional configuration

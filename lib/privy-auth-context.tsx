@@ -24,54 +24,68 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 // Function to authenticate Privy users and map to our User type
 async function authenticatePrivyUser(privyUser: any, fallbackEmail: string): Promise<User | null> {
   try {
-    // Extract email from Privy user
+    // Extract email and phone from Privy user
     const emailAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "email")
     const phoneAccount = privyUser.linkedAccounts?.find((account: any) => account.type === "phone")
     
     const userEmail = emailAccount?.address || fallbackEmail
+    const userPhone = phoneAccount?.phoneNumber || phoneAccount?.number
 
-    // Try to fetch user data from database first
+    // Fetch or create user data from database
     try {
-      const response = await fetch('/api/admin/users/999')
+      const response = await fetch('/api/auth/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          privyId: privyUser.id,
+          email: userEmail,
+          phone: userPhone
+        })
+      })
+
       if (response.ok) {
         const data = await response.json()
         if (data.success && data.user) {
-          // Use database roles and apps if available
+          // Map database user to our User type
           const userData: User = {
             id: privyUser.id,
-            email: userEmail,
-            name: data.user.name || userEmail.split("@")[0] || phoneAccount?.number || "User",
+            email: data.user.email,
+            name: data.user.name || userEmail?.split("@")[0] || userPhone || "User",
             role: data.user.roles?.includes("super_admin") ? "super_admin" : 
                   data.user.roles?.includes("admin") ? "admin" : "user",
-            roles: data.user.roles || ["user"],
+            roles: data.user.roles || [],
             apps: data.user.apps || [],
             isAuthenticated: true
           }
+
+          // Log if this is a new user
+          if (data.created) {
+            console.log("New user created:", userData.email, "Status:", data.user.status)
+          }
+
           return userData
         }
       }
     } catch (fetchError) {
-      console.log("Could not fetch user data from database, using defaults")
+      console.error("Could not fetch/create user in database:", fetchError)
     }
 
-    // Fallback to default roles if database fetch fails
-    const isSuperAdmin = userEmail === "alex@alexalaniz.com"
-    
+    // If database operation fails, return minimal access
+    console.warn("Database operation failed, returning user with no access")
     const userData: User = {
       id: privyUser.id,
-      email: userEmail,
-      name: userEmail.split("@")[0] || phoneAccount?.number || "User",
-      role: isSuperAdmin ? "super_admin" : "user",
-      roles: isSuperAdmin ? ["user", "admin", "super_admin"] : ["user"],
-      apps: isSuperAdmin ? ["solebrew", "chimpanion", "admin"] : ["solebrew", "chimpanion"],
+      email: userEmail || `phone_${userPhone}@privy.user`,
+      name: userEmail?.split("@")[0] || userPhone || "User",
+      role: "user",
+      roles: [], // No roles = no access
+      apps: [], // No apps = no access
       isAuthenticated: true
     }
 
     return userData
   } catch (error) {
     console.error("Error authenticating Privy user:", error)
-    // Fallback to mock auth if Privy processing fails
-    return await authenticateUser(fallbackEmail)
+    return null
   }
 }
 

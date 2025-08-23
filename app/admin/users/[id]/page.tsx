@@ -13,7 +13,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAuth } from "@/lib/privy-auth-context"
-import { ArrowLeft, Save, User, Phone, Wallet, Shield, AppWindow, Plus, Trash2, Link } from "lucide-react"
+import { ArrowLeft, Save, User, Phone, Wallet, Shield, AppWindow, Plus, Trash2, Link, Mail } from "lucide-react"
+import { PrivyServerLinkAccount } from "@/components/privy-server-link-account"
+import { getUserAuthMethod, getUserDisplayEmail, getUserIdentifier } from "@/lib/user-utils"
 
 interface UserProfile {
   id: string
@@ -38,6 +40,7 @@ export default function EditUser() {
   const searchParams = useSearchParams()
   const { user: currentUser } = useAuth()
   const [loading, setLoading] = useState(false)
+  const [fetchingUser, setFetchingUser] = useState(true)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [newPhone, setNewPhone] = useState("")
   const [newWallet, setNewWallet] = useState("")
@@ -47,6 +50,7 @@ export default function EditUser() {
 
   useEffect(() => {
     const fetchUser = async () => {
+      setFetchingUser(true)
       try {
         const response = await fetch(`/api/admin/users/${params.id}`)
         if (response.ok) {
@@ -55,12 +59,17 @@ export default function EditUser() {
             setUser(data.user)
           } else {
             console.error('Failed to fetch user:', data.error)
+            setUser(null)
           }
         } else {
           console.error('Failed to fetch user:', response.statusText)
+          setUser(null)
         }
       } catch (error) {
         console.error('Error fetching user:', error)
+        setUser(null)
+      } finally {
+        setFetchingUser(false)
       }
     }
 
@@ -79,10 +88,7 @@ export default function EditUser() {
         roles: user.roles,
         apps: user.apps,
         status: user.status,
-        linkedAccounts: {
-          phone: newPhone || user.linkedAccounts?.phone,
-          wallet: newWallet || user.linkedAccounts?.wallet
-        }
+        linkedAccounts: user.linkedAccounts
       }
 
       const response = await fetch(`/api/admin/users/${params.id}`, {
@@ -96,8 +102,12 @@ export default function EditUser() {
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
+          // Update local state with the saved data
+          if (data.user) {
+            setUser(data.user)
+          }
           alert("User profile updated successfully!")
-          router.back()
+          // Don't navigate away, stay on the page
         } else {
           alert(`Failed to update user: ${data.error}`)
         }
@@ -150,13 +160,57 @@ export default function EditUser() {
 
       const data = await response.json()
       if (data.success) {
-        alert('SMS verification sent! In production, user would enter verification code to complete linking.')
-        setUser(prev => prev ? {
-          ...prev,
-          phone: newPhone,
-          linkedAccounts: { ...prev.linkedAccounts, phone: newPhone }
-        } : null)
-        setNewPhone("")
+        // Simulate the Privy verification flow
+        const verificationCode = prompt(
+          `🔐 Privy SMS Verification\n\n` +
+          `A verification code has been sent to ${newPhone}.\n` +
+          `In production, this would be a real SMS.\n\n` +
+          `For demo purposes, enter any 6-digit code to continue:`
+        )
+        
+        if (verificationCode && verificationCode.length === 6) {
+          // Simulate verification success
+          const updatedUser = user ? {
+            ...user,
+            phone: newPhone,
+            linkedAccounts: { ...user.linkedAccounts, phone: newPhone }
+          } : null
+          
+          if (updatedUser) {
+            setUser(updatedUser)
+            setNewPhone("")
+            
+            // Auto-save the linked account
+            try {
+              const response = await fetch(`/api/admin/users/${params.id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  name: updatedUser.name,
+                  roles: updatedUser.roles,
+                  apps: updatedUser.apps,
+                  status: updatedUser.status,
+                  linkedAccounts: updatedUser.linkedAccounts
+                }),
+              })
+              
+              if (response.ok) {
+                const data = await response.json()
+                if (data.success && data.user) {
+                  setUser(data.user)
+                  alert('✅ Phone number linked and saved successfully!')
+                }
+              }
+            } catch (error) {
+              console.error('Error saving linked phone:', error)
+              alert('✅ Phone number linked (save manually to persist)')
+            }
+          }
+        } else if (verificationCode !== null) {
+          alert('❌ Invalid verification code. Please try again.')
+        }
       } else {
         alert(`Failed to link phone: ${data.error}`)
       }
@@ -184,13 +238,58 @@ export default function EditUser() {
 
       const data = await response.json()
       if (data.success) {
-        alert('Wallet linking initiated! In production, user would sign a message to verify ownership.')
-        setUser(prev => prev ? {
-          ...prev,
-          wallet: newWallet,
-          linkedAccounts: { ...prev.linkedAccounts, wallet: newWallet }
-        } : null)
-        setNewWallet("")
+        // Simulate the Privy wallet signature flow
+        const confirmed = confirm(
+          `🔗 Privy Wallet Verification\n\n` +
+          `To verify ownership of wallet:\n${newWallet}\n\n` +
+          `In production, you would:\n` +
+          `1. Connect your wallet (MetaMask, etc.)\n` +
+          `2. Sign a verification message\n` +
+          `3. Complete the linking process\n\n` +
+          `For demo purposes, click OK to simulate successful verification.`
+        )
+        
+        if (confirmed) {
+          // Simulate signature verification success
+          const updatedUser = user ? {
+            ...user,
+            wallet: newWallet,
+            linkedAccounts: { ...user.linkedAccounts, wallet: newWallet }
+          } : null
+          
+          if (updatedUser) {
+            setUser(updatedUser)
+            setNewWallet("")
+            
+            // Auto-save the linked account
+            try {
+              const response = await fetch(`/api/admin/users/${params.id}`, {
+                method: 'PUT',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  name: updatedUser.name,
+                  roles: updatedUser.roles,
+                  apps: updatedUser.apps,
+                  status: updatedUser.status,
+                  linkedAccounts: updatedUser.linkedAccounts
+                }),
+              })
+              
+              if (response.ok) {
+                const data = await response.json()
+                if (data.success && data.user) {
+                  setUser(data.user)
+                  alert('✅ Wallet linked and saved successfully!')
+                }
+              }
+            } catch (error) {
+              console.error('Error saving linked wallet:', error)
+              alert('✅ Wallet linked (save manually to persist)')
+            }
+          }
+        }
       } else {
         alert(`Failed to link wallet: ${data.error}`)
       }
@@ -205,6 +304,16 @@ export default function EditUser() {
     
     const value = type === 'phone' ? user.linkedAccounts.phone : user.linkedAccounts.wallet
     if (!value) return
+
+    // Confirm unlinking action
+    const confirmed = confirm(
+      `🔓 Unlink ${type === 'phone' ? 'Phone Number' : 'Wallet'}\n\n` +
+      `Are you sure you want to unlink this ${type === 'phone' ? 'phone number' : 'wallet address'}?\n` +
+      `${value}\n\n` +
+      `This will remove it from the user's Privy account.`
+    )
+
+    if (!confirmed) return
 
     try {
       const response = await fetch('/api/privy/link', {
@@ -221,22 +330,33 @@ export default function EditUser() {
 
       const data = await response.json()
       if (data.success) {
-        alert(`${type === 'phone' ? 'Phone number' : 'Wallet address'} unlinked successfully!`)
+        alert(`✅ ${type === 'phone' ? 'Phone number' : 'Wallet address'} unlinked successfully!`)
         setUser(prev => prev ? {
           ...prev,
           [type]: undefined,
           linkedAccounts: { 
             ...prev.linkedAccounts, 
-            [type]: undefined 
+            [type]: null 
           }
         } : null)
       } else {
-        alert(`Failed to unlink ${type}: ${data.error}`)
+        alert(`❌ Failed to unlink ${type}: ${data.error}`)
       }
     } catch (error) {
       console.error(`Error unlinking ${type}:`, error)
-      alert(`Failed to unlink ${type}`)
+      alert(`❌ Failed to unlink ${type}`)
     }
+  }
+
+  if (fetchingUser) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900 mx-auto mb-4"></div>
+          <h2 className="text-xl font-semibold mb-2">Loading user...</h2>
+        </div>
+      </div>
+    )
   }
 
   if (!user) {
@@ -302,17 +422,59 @@ export default function EditUser() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
+                      <Label htmlFor="email" className="flex items-center gap-2">
+                        {getUserAuthMethod(user) === 'email' ? (
+                          <>
+                            <Mail className="h-4 w-4" />
+                            Email Address
+                          </>
+                        ) : getUserAuthMethod(user) === 'phone' ? (
+                          <>
+                            <Phone className="h-4 w-4" />
+                            Phone Number (Primary Auth)
+                          </>
+                        ) : (
+                          <>
+                            <Wallet className="h-4 w-4" />
+                            Wallet Address
+                          </>
+                        )}
+                      </Label>
                       <Input
                         id="email"
-                        value={user.email}
-                        onChange={(e) => setUser({ ...user, email: e.target.value })}
-                        type="email"
+                        value={getUserDisplayEmail(user)}
                         disabled
+                        className="bg-gray-50"
                       />
-                      <p className="text-xs text-muted-foreground">Email cannot be changed (managed by Privy)</p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-xs text-muted-foreground">
+                          {getUserAuthMethod(user) === 'email' 
+                            ? 'Email authentication' 
+                            : getUserAuthMethod(user) === 'phone'
+                            ? 'SMS authentication'
+                            : 'Wallet authentication'} (managed by Privy)
+                        </p>
+                        <Badge variant="outline" className="text-xs">
+                          {getUserAuthMethod(user).toUpperCase()} USER
+                        </Badge>
+                      </div>
                     </div>
                   </div>
+
+                  {user.phone && (
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">Phone Number</Label>
+                      <div>
+                        <Input
+                          id="phone"
+                          value={user.phone}
+                          disabled
+                          className="bg-gray-50"
+                        />
+                        <p className="text-xs text-muted-foreground">Phone number from Privy authentication</p>
+                      </div>
+                    </div>
+                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="status">Account Status</Label>
@@ -341,103 +503,165 @@ export default function EditUser() {
                   <CardDescription>Manage phone numbers and wallet addresses linked to this account</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6">
-                  {/* Current Phone */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="flex items-center space-x-2">
-                        <Phone className="h-4 w-4" />
-                        <span>Phone Number</span>
-                      </Label>
-                    </div>
-                    
-                    {user.linkedAccounts.phone ? (
-                      <div className="flex items-center justify-between p-3 border rounded-lg bg-green-50">
-                        <div>
-                          <p className="font-medium">{user.linkedAccounts.phone}</p>
-                          <p className="text-xs text-green-600">Verified via Privy</p>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-red-600"
-                          onClick={() => unlinkAccount('phone')}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="flex space-x-2">
-                          <Input
-                            value={newPhone}
-                            onChange={(e) => setNewPhone(e.target.value)}
-                            placeholder="+1 (555) 123-4567"
-                            className="flex-1"
-                          />
-                          <Button onClick={linkPhone} disabled={!newPhone.trim()}>
-                            <Plus className="mr-2 h-3 w-3" />
-                            Link Phone
-                          </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground">Phone will be verified through Privy SMS</p>
-                      </div>
-                    )}
-                  </div>
+                  {/* Phone Linking via Privy Server API */}
+                  <PrivyServerLinkAccount
+                    userId={user.id}
+                    type="phone"
+                    currentValue={user.linkedAccounts?.phone || null}
+                    onLinked={async (phone) => {
+                      // Update local state
+                      const updatedUser = {
+                        ...user,
+                        linkedAccounts: { ...(user.linkedAccounts || {}), phone }
+                      }
+                      setUser(updatedUser)
+                      
+                      // Save to database
+                      try {
+                        const response = await fetch(`/api/admin/users/${params.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            name: updatedUser.name,
+                            roles: updatedUser.roles,
+                            apps: updatedUser.apps,
+                            status: updatedUser.status,
+                            linkedAccounts: updatedUser.linkedAccounts
+                          }),
+                        })
+                        
+                        if (response.ok) {
+                          const data = await response.json()
+                          if (data.success && data.user) {
+                            setUser(data.user)
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error saving linked phone:', error)
+                      }
+                    }}
+                    onUnlinked={async () => {
+                      // Update local state
+                      const updatedUser = {
+                        ...user,
+                        linkedAccounts: { ...user.linkedAccounts, phone: null }
+                      }
+                      setUser(updatedUser)
+                      
+                      // Save to database
+                      try {
+                        const response = await fetch(`/api/admin/users/${params.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            name: updatedUser.name,
+                            roles: updatedUser.roles,
+                            apps: updatedUser.apps,
+                            status: updatedUser.status,
+                            linkedAccounts: updatedUser.linkedAccounts
+                          }),
+                        })
+                        
+                        if (response.ok) {
+                          const data = await response.json()
+                          if (data.success && data.user) {
+                            setUser(data.user)
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error saving unlinked phone:', error)
+                      }
+                    }}
+                  />
 
-                  {/* Current Wallet */}
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <Label className="flex items-center space-x-2">
-                        <Wallet className="h-4 w-4" />
-                        <span>Wallet Address</span>
-                      </Label>
-                    </div>
-                    
-                    {user.linkedAccounts.wallet ? (
-                      <div className="flex items-center justify-between p-3 border rounded-lg bg-blue-50">
-                        <div>
-                          <p className="font-medium font-mono text-xs">
-                            {user.linkedAccounts.wallet.slice(0, 6)}...{user.linkedAccounts.wallet.slice(-4)}
-                          </p>
-                          <p className="text-xs text-blue-600">Connected via Privy</p>
-                        </div>
-                        <Button 
-                          variant="outline" 
-                          size="sm" 
-                          className="text-red-600"
-                          onClick={() => unlinkAccount('wallet')}
-                        >
-                          <Trash2 className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="space-y-2">
-                        <div className="flex space-x-2">
-                          <Input
-                            value={newWallet}
-                            onChange={(e) => setNewWallet(e.target.value)}
-                            placeholder="0x123...abc"
-                            className="flex-1 font-mono text-xs"
-                          />
-                          <Button onClick={linkWallet} disabled={!newWallet.trim()}>
-                            <Plus className="mr-2 h-3 w-3" />
-                            Link Wallet
-                          </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground">Wallet will be verified through Privy connection</p>
-                      </div>
-                    )}
-                  </div>
+                  {/* Wallet Linking via Privy Server API */}
+                  <PrivyServerLinkAccount
+                    userId={user.id}
+                    type="wallet"
+                    currentValue={user.linkedAccounts?.wallet || null}
+                    onLinked={async (wallet) => {
+                      // Update local state
+                      const updatedUser = {
+                        ...user,
+                        linkedAccounts: { ...(user.linkedAccounts || {}), wallet }
+                      }
+                      setUser(updatedUser)
+                      
+                      // Save to database
+                      try {
+                        const response = await fetch(`/api/admin/users/${params.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            name: updatedUser.name,
+                            roles: updatedUser.roles,
+                            apps: updatedUser.apps,
+                            status: updatedUser.status,
+                            linkedAccounts: updatedUser.linkedAccounts
+                          }),
+                        })
+                        
+                        if (response.ok) {
+                          const data = await response.json()
+                          if (data.success && data.user) {
+                            setUser(data.user)
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error saving linked wallet:', error)
+                      }
+                    }}
+                    onUnlinked={async () => {
+                      // Update local state
+                      const updatedUser = {
+                        ...user,
+                        linkedAccounts: { ...user.linkedAccounts, wallet: null }
+                      }
+                      setUser(updatedUser)
+                      
+                      // Save to database
+                      try {
+                        const response = await fetch(`/api/admin/users/${params.id}`, {
+                          method: 'PUT',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            name: updatedUser.name,
+                            roles: updatedUser.roles,
+                            apps: updatedUser.apps,
+                            status: updatedUser.status,
+                            linkedAccounts: updatedUser.linkedAccounts
+                          }),
+                        })
+                        
+                        if (response.ok) {
+                          const data = await response.json()
+                          if (data.success && data.user) {
+                            setUser(data.user)
+                          }
+                        }
+                      } catch (error) {
+                        console.error('Error saving unlinked wallet:', error)
+                      }
+                    }}
+                  />
 
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
                     <div className="flex items-start space-x-2">
                       <Link className="h-4 w-4 text-blue-600 mt-0.5" />
                       <div>
-                        <h4 className="text-sm font-medium text-blue-800">Privy Account Linking</h4>
+                        <h4 className="text-sm font-medium text-blue-800">Privy Server-Side API Integration</h4>
                         <p className="text-sm text-blue-700 mt-1">
-                          This allows users to sign in with multiple methods (email, phone, or wallet) using the same account.
-                          All linked accounts will have access to the same permissions and applications.
+                          This page now uses Privy's server-side API for account linking, which supports multiple linked accounts.
                         </p>
+                        <div className="mt-2 p-2 bg-green-50 rounded border border-green-200">
+                          <p className="text-xs font-medium text-green-800">✅ Server-Side Benefits:</p>
+                          <ul className="text-xs text-green-700 mt-1 list-disc list-inside">
+                            <li>Link multiple accounts of the same type</li>
+                            <li>No "disallowed_login_method" errors</li>
+                            <li>Support for social login methods</li>
+                            <li>Direct API access without client restrictions</li>
+                          </ul>
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -515,7 +739,7 @@ export default function EditUser() {
                 </Avatar>
                 
                 <div className="text-center">
-                  <h3 className="font-semibold">{user.name || "Unnamed User"}</h3>
+                  <h3 className="font-semibold">{user.name || user.email?.split('@')[0] || "Unnamed User"}</h3>
                   <p className="text-sm text-muted-foreground">{user.email}</p>
                 </div>
 
