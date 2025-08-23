@@ -20,12 +20,13 @@ export function PrivyServerLinkAccount({ userId, type, currentValue, onLinked, o
   const [linking, setLinking] = useState(false)
   const [unlinking, setUnlinking] = useState(false)
 
-  // Get current linked accounts from Privy user
-  const linkedAccounts = user?.linkedAccounts || []
-  const linkedAccount = type === 'phone'
-    ? linkedAccounts.find(acc => acc.type === 'phone')
-    : linkedAccounts.find(acc => acc.type === 'wallet')
-  const hasLinkedAccount = !!linkedAccount
+  // Use currentValue instead of the logged-in user's linked accounts
+  // This ensures we show the wallet/phone for the user being edited, not the admin
+  const hasLinkedAccount = !!currentValue
+  const linkedAccount = hasLinkedAccount ? {
+    phoneNumber: type === 'phone' ? currentValue : undefined,
+    address: type === 'wallet' ? currentValue : undefined
+  } : null
 
   const handleLink = async () => {
     if (!inputValue.trim()) return

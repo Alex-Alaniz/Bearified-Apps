@@ -106,10 +106,28 @@ async function syncPrivyUsers() {
     if (walletAccount && walletAccount.address) {
       console.log(`  💰 Wallet: ${walletAccount.address}`)
       
-      // If no email or phone, update name for wallet user
+      // Store wallet address for all users who have wallets
+      // We'll encode it in the name field since wallet column doesn't exist
+      const currentWalletInName = user.name?.match(/\[0x[a-fA-F0-9]{40}\]/)
+      const needsWalletUpdate = !currentWalletInName || currentWalletInName[0].slice(1, -1) !== walletAccount.address
+      
+      if (needsWalletUpdate) {
+        // Remove any existing wallet address from name
+        let cleanName = user.name?.replace(/ \[0x[a-fA-F0-9]{40}\]/, '') || 'User'
+        
+        // Add the new wallet address
+        updates.name = `${cleanName} [${walletAccount.address}]`
+        hasUpdates = true
+        console.log(`  🔄 Adding wallet to name: ${updates.name}`)
+      }
+      
+      // For wallet-only users, also update email format
       if (!emailAccount && !phoneAccount) {
-        updates.name = `Wallet User (${walletAccount.address.slice(0, 6)}...${walletAccount.address.slice(-4)})`
         updates.email = `wallet_${walletAccount.address.slice(0, 8).toLowerCase()}@privy.user`
+        if (!user.name?.startsWith('Wallet User')) {
+          updates.name = `Wallet User (${walletAccount.address.slice(0, 6)}...${walletAccount.address.slice(-4)}) [${walletAccount.address}]`
+        }
+        hasUpdates = true
       }
     }
 

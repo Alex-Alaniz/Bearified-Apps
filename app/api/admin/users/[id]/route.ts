@@ -12,12 +12,13 @@ export async function GET(
 ) {
   try {
     const userId = params.id
+    console.log('GET user request for ID:', userId)
 
     // Handle human-readable slugs
     let actualUserId = userId
     
-    // For Alex's account (super admin)
-    if (userId === "999" || userId === "super-admin" || userId === "alex") {
+    // For Alex's account (super admin) - but only for old IDs, not the new slug
+    if (userId === "999" || userId === "super-admin") {
       const { data: privyUser, error: privyError } = await supabase
         .from('users')
         .select('*')
@@ -33,7 +34,7 @@ export async function GET(
             name: privyUser.name || "Alex Alaniz",
             roles: privyUser.roles || ["super_admin", "admin", "user"],
             apps: ["SoleBrew", "Chimpanion", "Admin Panel"], // Static for now
-            status: "active", // Static for now
+            status: roles?.length > 0 ? "active" : "pending",
             lastLogin: "Just now",
             linkedAccounts: {
               phone: null,
@@ -78,6 +79,9 @@ export async function GET(
       // Email-based slug
       const emailPrefix = userId.replace(/-/g, '.')
       query = query.like('email', `${emailPrefix}@%`)
+    } else if (!userId.startsWith('did:privy:') && !userId.includes('-')) {
+      // Simple username slug like "alex" -> alex@alexalaniz.com
+      query = query.like('email', `${userId}@%`)
     } else {
       // Direct ID lookup (Privy DID or database ID)
       query = query.eq('id', userId)
@@ -116,6 +120,12 @@ export async function GET(
       // Extract wallet from email format: wallet_0x1234abcd@privy.user
       wallet = user.email.replace('wallet_', '').replace('@privy.user', '')
       displayEmail = null // Wallet users don't have a real email
+    }
+    
+    // Also check if wallet is encoded in the name field
+    const walletMatch = user.name?.match(/\[0x[a-fA-F0-9]{40}\]/)
+    if (walletMatch) {
+      wallet = walletMatch[0].slice(1, -1) // Remove brackets
     }
 
     return NextResponse.json({
@@ -204,7 +214,7 @@ export async function PUT(
             name: updatedUser.name,
             roles: updatedUser.roles,
             apps: ["SoleBrew", "Chimpanion", "Admin Panel"], // Static for now
-            status: "active", // Static for now
+            status: updatedUser.roles?.length > 0 ? "active" : "pending",
             lastLogin: "Just now",
             linkedAccounts: {
               phone: null,
@@ -241,7 +251,7 @@ export async function PUT(
             name: newUser.name,
             roles: newUser.roles,
             apps: ["SoleBrew", "Chimpanion", "Admin Panel"], // Static for now
-            status: "active", // Static for now
+            status: newUser.roles?.length > 0 ? "active" : "pending",
             lastLogin: "Just now",
             linkedAccounts: {
               phone: null,
@@ -270,6 +280,9 @@ export async function PUT(
     } else if (userId.includes('@') && !userId.startsWith('did:privy:')) {
       const emailPrefix = userId.replace(/-/g, '.')
       updateQuery = updateQuery.like('email', `${emailPrefix}@%`)
+    } else if (!userId.startsWith('did:privy:') && !userId.includes('-')) {
+      // Simple username slug like "alex" -> alex@alexalaniz.com
+      updateQuery = updateQuery.like('email', `${userId}@%`)
     } else {
       updateQuery = updateQuery.eq('id', userId)
     }
@@ -337,6 +350,9 @@ export async function DELETE(
     } else if (userId.includes('@') && !userId.startsWith('did:privy:')) {
       const emailPrefix = userId.replace(/-/g, '.')
       deleteQuery = deleteQuery.like('email', `${emailPrefix}@%`)
+    } else if (!userId.startsWith('did:privy:') && !userId.includes('-')) {
+      // Simple username slug like "alex" -> alex@alexalaniz.com
+      deleteQuery = deleteQuery.like('email', `${userId}@%`)
     } else {
       deleteQuery = deleteQuery.eq('id', userId)
     }
