@@ -3,10 +3,22 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Globe, Calendar, Users, MapPin, Trophy, Clock, TrendingUp, Star } from "lucide-react"
+import { Progress } from "@/components/ui/progress"
+import { 
+  Globe, 
+  GitBranch, 
+  Clock, 
+  Users, 
+  CheckCircle, 
+  AlertTriangle,
+  Code,
+  Database,
+  Smartphone,
+  Settings
+} from "lucide-react"
 import { useAuth } from "@/lib/privy-auth-context"
 
-export default function GolfAppPage() {
+export default function GolfAppDevelopmentPage() {
   const { user } = useAuth()
 
   if (!user) {
@@ -29,219 +41,277 @@ export default function GolfAppPage() {
             <Globe className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Golf App</h1>
-            <p className="text-gray-600">Golf course management and booking system</p>
+            <h1 className="text-3xl font-bold">Golf App Development</h1>
+            <p className="text-gray-600">Project management dashboard for Golf App development</p>
           </div>
         </div>
-        <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-          Development
-        </Badge>
+        <div className="flex items-center space-x-2">
+          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
+            Development
+          </Badge>
+          <Button>
+            <Code className="mr-2 h-4 w-4" />
+            View Code
+          </Button>
+        </div>
       </div>
 
-      {/* Quick Stats */}
+      {/* Project Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Bookings</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Project Progress</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">24</div>
-            <p className="text-xs text-muted-foreground">+12% from last week</p>
+            <div className="text-2xl font-bold">25%</div>
+            <p className="text-xs text-muted-foreground">MVP Features Complete</p>
+            <Progress value={25} className="mt-2" />
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Registered Players</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Tasks</CardTitle>
+            <Clock className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">8</div>
+            <p className="text-xs text-muted-foreground">3 in progress, 5 pending</p>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Team Members</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">128</div>
-            <p className="text-xs text-muted-foreground">+8 new this month</p>
+            <div className="text-2xl font-bold">4</div>
+            <p className="text-xs text-muted-foreground">Developers assigned</p>
           </CardContent>
         </Card>
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Course Utilization</CardTitle>
-            <MapPin className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Next Milestone</CardTitle>
+            <AlertTriangle className="h-4 w-4 text-yellow-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">87%</div>
-            <p className="text-xs text-muted-foreground">Optimal capacity</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Revenue</CardTitle>
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">$12,430</div>
-            <p className="text-xs text-muted-foreground">+15% from last month</p>
+            <div className="text-2xl font-bold">2w</div>
+            <p className="text-xs text-muted-foreground">Beta release target</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Main Features */}
+      {/* Development Status */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Course Booking */}
+        {/* Current Sprint */}
         <Card>
           <CardHeader>
             <div className="flex items-center space-x-2">
-              <Calendar className="h-5 w-5 text-green-600" />
-              <CardTitle>Course Booking</CardTitle>
+              <GitBranch className="h-5 w-5 text-blue-600" />
+              <CardTitle>Current Sprint</CardTitle>
             </div>
-            <CardDescription>Manage tee times and course reservations</CardDescription>
+            <CardDescription>Sprint 3: Core Features Implementation</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-3">
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <Clock className="h-4 w-4 text-gray-500" />
+                  <CheckCircle className="h-4 w-4 text-green-600" />
                   <div>
-                    <p className="font-medium">9:00 AM - Front Nine</p>
-                    <p className="text-sm text-gray-500">John Smith, Mike Johnson</p>
+                    <p className="font-medium">Database Schema Design</p>
+                    <p className="text-sm text-gray-500">Users, courses, bookings tables</p>
                   </div>
                 </div>
-                <Badge variant="default">Confirmed</Badge>
+                <Badge variant="default">Done</Badge>
               </div>
               
               <div className="flex items-center justify-between p-3 border rounded-lg">
                 <div className="flex items-center space-x-3">
-                  <Clock className="h-4 w-4 text-gray-500" />
+                  <Clock className="h-4 w-4 text-blue-600" />
                   <div>
-                    <p className="font-medium">10:30 AM - Championship Course</p>
-                    <p className="text-sm text-gray-500">Sarah Wilson, Tom Brown</p>
+                    <p className="font-medium">Authentication System</p>
+                    <p className="text-sm text-gray-500">User registration and login</p>
                   </div>
                 </div>
-                <Badge variant="outline">Pending</Badge>
+                <Badge variant="outline">In Progress</Badge>
+              </div>
+
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div className="flex items-center space-x-3">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <div>
+                    <p className="font-medium">Booking System API</p>
+                    <p className="text-sm text-gray-500">Backend endpoints for reservations</p>
+                  </div>
+                </div>
+                <Badge variant="secondary">Pending</Badge>
               </div>
             </div>
-            
-            <Button className="w-full">
-              <Calendar className="mr-2 h-4 w-4" />
-              New Booking
-            </Button>
           </CardContent>
         </Card>
 
-        {/* Score Tracking */}
+        {/* Technical Stack */}
         <Card>
           <CardHeader>
             <div className="flex items-center space-x-2">
-              <Trophy className="h-5 w-5 text-yellow-600" />
-              <CardTitle>Score Tracking</CardTitle>
+              <Code className="h-5 w-5 text-purple-600" />
+              <CardTitle>Technical Stack</CardTitle>
             </div>
-            <CardDescription>Track scores and handicaps</CardDescription>
+            <CardDescription>Technologies and frameworks in use</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                    <Star className="h-4 w-4 text-green-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Best Round: 72</p>
-                    <p className="text-sm text-gray-500">Championship Course</p>
-                  </div>
-                </div>
-                <span className="text-sm text-green-600 font-medium">Par</span>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center space-x-2 p-2 border rounded">
+                <Globe className="h-4 w-4 text-blue-600" />
+                <span className="text-sm">Next.js 14</span>
               </div>
-              
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center space-x-3">
-                  <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                    <TrendingUp className="h-4 w-4 text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="font-medium">Current Handicap: 12</p>
-                    <p className="text-sm text-gray-500">Improving trend</p>
-                  </div>
-                </div>
-                <span className="text-sm text-blue-600 font-medium">↗ +2</span>
+              <div className="flex items-center space-x-2 p-2 border rounded">
+                <Database className="h-4 w-4 text-green-600" />
+                <span className="text-sm">Supabase</span>
+              </div>
+              <div className="flex items-center space-x-2 p-2 border rounded">
+                <Code className="h-4 w-4 text-blue-500" />
+                <span className="text-sm">TypeScript</span>
+              </div>
+              <div className="flex items-center space-x-2 p-2 border rounded">
+                <Smartphone className="h-4 w-4 text-pink-600" />
+                <span className="text-sm">React Native</span>
               </div>
             </div>
             
-            <Button className="w-full" variant="outline">
-              <Trophy className="mr-2 h-4 w-4" />
-              Enter Score
-            </Button>
+            <div className="pt-2">
+              <h4 className="font-medium mb-2">Development Tools:</h4>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">Git</Badge>
+                <Badge variant="outline">Docker</Badge>
+                <Badge variant="outline">Vercel</Badge>
+                <Badge variant="outline">Figma</Badge>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tournament Management */}
+      {/* Feature Roadmap */}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Trophy className="h-5 w-5 text-purple-600" />
+              <Settings className="h-5 w-5 text-gray-600" />
               <div>
-                <CardTitle>Tournament Management</CardTitle>
-                <CardDescription>Organize and manage golf tournaments</CardDescription>
+                <CardTitle>Feature Roadmap</CardTitle>
+                <CardDescription>Planned features and development phases</CardDescription>
               </div>
             </div>
-            <Button>
-              <Trophy className="mr-2 h-4 w-4" />
-              Create Tournament
-            </Button>
           </div>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-lg mb-2">Spring Championship</h3>
-              <p className="text-sm text-gray-600 mb-3">April 15-16, 2024</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">32 Players</span>
-                <Badge>Active</Badge>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg flex items-center">
+                <Badge className="mr-2">Phase 1</Badge>
+                MVP (Current)
+              </h3>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm">Project Setup</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <CheckCircle className="h-4 w-4 text-green-600" />
+                  <span className="text-sm">Database Schema</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <Clock className="h-4 w-4 text-blue-600" />
+                  <span className="text-sm">User Authentication</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-yellow-600" />
+                  <span className="text-sm">Basic UI Components</span>
+                </div>
               </div>
             </div>
             
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-lg mb-2">Member's Cup</h3>
-              <p className="text-sm text-gray-600 mb-3">May 20, 2024</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">16 Players</span>
-                <Badge variant="outline">Planning</Badge>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg flex items-center">
+                <Badge variant="outline" className="mr-2">Phase 2</Badge>
+                Core Features
+              </h3>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">Course Management</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">Booking System</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">Score Tracking</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">User Profiles</span>
+                </div>
               </div>
             </div>
             
-            <div className="p-4 border rounded-lg">
-              <h3 className="font-semibold text-lg mb-2">Charity Open</h3>
-              <p className="text-sm text-gray-600 mb-3">June 10, 2024</p>
-              <div className="flex items-center justify-between">
-                <span className="text-sm">64 Players</span>
-                <Badge variant="secondary">Draft</Badge>
+            <div className="space-y-3">
+              <h3 className="font-semibold text-lg flex items-center">
+                <Badge variant="outline" className="mr-2">Phase 3</Badge>
+                Advanced
+              </h3>
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">Tournament System</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">Mobile App</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">Payment Integration</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <AlertTriangle className="h-4 w-4 text-gray-400" />
+                  <span className="text-sm text-gray-500">Analytics Dashboard</span>
+                </div>
               </div>
             </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Development Notice */}
-      <Card className="border-yellow-200 bg-yellow-50">
+      {/* Quick Actions */}
+      <Card>
         <CardHeader>
-          <div className="flex items-center space-x-2">
-            <Globe className="h-5 w-5 text-yellow-600" />
-            <CardTitle className="text-yellow-800">Development Mode</CardTitle>
-          </div>
+          <CardTitle>Quick Actions</CardTitle>
+          <CardDescription>Common development tasks and shortcuts</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="text-yellow-700 mb-4">
-            The Golf App is currently in development. Features shown are mockups for demonstration purposes.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-            <Badge variant="outline" className="text-center justify-center">Course Booking ✓</Badge>
-            <Badge variant="outline" className="text-center justify-center">Score Tracking ✓</Badge>
-            <Badge variant="outline" className="text-center justify-center">Tournament Management ✓</Badge>
-            <Badge variant="secondary" className="text-center justify-center">Payment Processing</Badge>
-            <Badge variant="secondary" className="text-center justify-center">Mobile App</Badge>
-            <Badge variant="secondary" className="text-center justify-center">Pro Shop Integration</Badge>
+          <div className="flex flex-wrap gap-3">
+            <Button variant="outline">
+              <GitBranch className="mr-2 h-4 w-4" />
+              Create Branch
+            </Button>
+            <Button variant="outline">
+              <Code className="mr-2 h-4 w-4" />
+              Open VS Code
+            </Button>
+            <Button variant="outline">
+              <Database className="mr-2 h-4 w-4" />
+              Database Console
+            </Button>
+            <Button variant="outline">
+              <Settings className="mr-2 h-4 w-4" />
+              Deploy to Staging
+            </Button>
           </div>
         </CardContent>
       </Card>
