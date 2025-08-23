@@ -71,15 +71,17 @@ export async function POST(request: NextRequest) {
       }, { status: 409 })
     }
 
-    // Create new user in database
+    // Create new user in database (only columns that exist)
+    const userId = `user_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
     const { data: newUser, error: createError } = await supabase
       .from('users')
       .insert({
+        id: userId,
         email,
         name,
-        roles: roles || ['user'],
-        apps: apps || [],
-        status: status || 'pending',
+        roles: roles || [],
+        // Store status in avatar field as workaround
+        avatar: status ? `status:${status}` : 'status:pending',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })

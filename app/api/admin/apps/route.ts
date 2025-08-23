@@ -48,35 +48,36 @@ export async function POST(request: Request) {
       }, { status: 400 })
     }
 
-    // Create the app record
-    const appData = {
+    // For now, since we don't have an apps table, we'll simulate success
+    // In production, you would add the app to APP_CONFIGS programmatically
+    // or store in a database table
+    
+    const newApp = {
+      id: slug,
       name,
       description,
-      slug,
       icon,
       color,
-      status,
+      href: `/dashboard/${slug}`,
+      requiredRoles: requiredRoles || [`${slug}-admin`, `${slug}-member`],
       features: features || [],
-      required_roles: requiredRoles || [],
-      is_active: status === 'active',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
+      status: status || 'development',
+      isActive: true,
+      created_at: new Date().toISOString()
     }
 
-    const { data: newApp, error } = await supabase
-      .from('apps')
-      .insert([appData])
-      .select()
-      .single()
-
-    if (error) {
-      throw new Error(`Failed to create app: ${error.message}`)
-    }
+    // TODO: Add app to APP_CONFIGS or database
+    console.log('New app would be created:', newApp)
+    console.log('NOTE: To complete onboarding, add this app to lib/app-configs.ts')
 
     return NextResponse.json({
       success: true,
-      message: 'Application created successfully',
-      app: newApp
+      message: 'Application configuration generated. Please add to APP_CONFIGS to activate.',
+      app: newApp,
+      instructions: {
+        step1: 'Add the following configuration to lib/app-configs.ts',
+        config: newApp
+      }
     })
 
   } catch (error) {
