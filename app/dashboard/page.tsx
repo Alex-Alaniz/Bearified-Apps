@@ -3,16 +3,21 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Coffee, Bot, Users, Activity, TrendingUp, Shield } from "lucide-react"
+import { Coffee, Bot, Users, Activity, TrendingUp, Shield, Settings, Globe, Package } from "lucide-react"
 import Link from "next/link"
 import { useAuth } from "@/lib/privy-auth-context"
+import { APP_CONFIGS, getAccessibleApps } from "@/lib/app-configs"
+
+const iconMap = {
+  Coffee,
+  Bot,
+  Settings,
+  Globe,
+  Package,
+}
 
 export default function DashboardPage() {
-  const { user, hasRole, isSuperAdmin, apps } = useAuth()
-
-  // Calculate real stats
-  const activeApps = apps?.length || 0
-  const userAccess = user?.apps?.length || 0
+  const { user, hasRole, isSuperAdmin } = useAuth()
 
   if (!user) {
     return (
@@ -24,6 +29,14 @@ export default function DashboardPage() {
       </div>
     )
   }
+
+  // Get accessible apps dynamically
+  const userRoles = user.roles || []
+  const accessibleApps = getAccessibleApps(userRoles).filter(app => app.id !== 'admin')
+  
+  // Calculate real stats
+  const activeApps = accessibleApps.length
+  const userAccess = accessibleApps.length
 
   // Check if user has no access
   if (!user.roles || user.roles.length === 0) {
@@ -101,79 +114,69 @@ export default function DashboardPage() {
       {/* Applications Grid */}
       <div>
         <h2 className="text-2xl font-bold mb-6">Your Applications</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* SoleBrew */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center">
-                    <Coffee className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">SoleBrew</CardTitle>
-                    <CardDescription>Coffee shop management</CardDescription>
-                  </div>
-                </div>
-                {hasRole("solebrew") || hasRole("admin") || hasRole("super_admin") ? (
-                  <Badge variant="default">Active</Badge>
-                ) : (
-                  <Badge variant="secondary">No Access</Badge>
-                )}
-              </div>
-            </CardHeader>
+        {accessibleApps.length === 0 ? (
+          <Card className="text-center py-12">
             <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                Manage your coffee shop operations, inventory, and customer analytics all in one place.
+              <Shield className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">No Applications Available</h3>
+              <p className="text-gray-600 max-w-md mx-auto">
+                You don't have access to any applications yet. Contact an administrator to request access.
               </p>
-              <div className="flex space-x-2">
-                {hasRole("solebrew") || hasRole("admin") || hasRole("super_admin") ? (
-                  <Button asChild>
-                    <Link href="/dashboard/solebrew">Open App</Link>
-                  </Button>
-                ) : (
-                  <Button disabled>No Access</Button>
-                )}
-              </div>
             </CardContent>
           </Card>
-
-          {/* Chimpanion */}
-          <Card className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center">
-                    <Bot className="h-6 w-6 text-white" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-xl">Chimpanion</CardTitle>
-                    <CardDescription>Security & intelligence</CardDescription>
-                  </div>
-                </div>
-                {hasRole("chimpanion") || hasRole("admin") || hasRole("super_admin") ? (
-                  <Badge variant="default">Active</Badge>
-                ) : (
-                  <Badge variant="secondary">No Access</Badge>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-gray-600 mb-4">
-                Advanced security monitoring and business intelligence platform for comprehensive insights.
-              </p>
-              <div className="flex space-x-2">
-                {hasRole("chimpanion") || hasRole("admin") || hasRole("super_admin") ? (
-                  <Button asChild>
-                    <Link href="/dashboard/chimpanion">Open App</Link>
-                  </Button>
-                ) : (
-                  <Button disabled>No Access</Button>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {accessibleApps.map((app) => {
+              const Icon = iconMap[app.icon as keyof typeof iconMap] || Settings
+              const hasAppAccess = app.requiredRoles?.some(role => userRoles.includes(role)) || userRoles.includes('super_admin') || userRoles.includes('admin')
+              const gradientColor = app.color.includes('gradient') ? app.color : `bg-gradient-to-br ${app.color}`
+              
+              return (
+                <Card key={app.id} className="hover:shadow-lg transition-shadow">
+                  <CardHeader>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-12 h-12 ${gradientColor} rounded-lg flex items-center justify-center`}>
+                          <Icon className="h-6 w-6 text-white" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-xl">{app.name}</CardTitle>
+                          <CardDescription>{app.description}</CardDescription>
+                        </div>
+                      </div>
+                      <div className="flex flex-col items-end space-y-1">
+                        {hasAppAccess ? (
+                          <Badge variant="default">Active</Badge>
+                        ) : (
+                          <Badge variant="secondary">No Access</Badge>
+                        )}
+                        <Badge variant="outline" className="text-xs">
+                          {app.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-gray-600 mb-4">
+                      {app.features?.length > 0 
+                        ? `Features: ${app.features.slice(0, 3).join(', ')}${app.features.length > 3 ? '...' : ''}` 
+                        : 'Application features and capabilities.'}
+                    </p>
+                    <div className="flex space-x-2">
+                      {hasAppAccess ? (
+                        <Button asChild>
+                          <Link href={app.href}>Open App</Link>
+                        </Button>
+                      ) : (
+                        <Button disabled>No Access</Button>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Admin Section */}

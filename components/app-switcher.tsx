@@ -5,108 +5,37 @@ import { useAuth } from "@/lib/privy-auth-context"
 import { getAccessibleApps, getAccessibleAdminApps, type AppConfig } from "@/lib/app-configs"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
-import { Grid3X3, Coffee, Bot, Settings, Lock } from "lucide-react"
+import { Grid3X3, Coffee, Bot, Settings, Lock, Globe, Package } from "lucide-react"
 import Link from "next/link"
 
 const iconMap = {
   Coffee,
   Bot,
   Settings,
+  Globe,
+  Package,
   Grid3X3,
 }
 
 export function AppSwitcher() {
   const { user } = useAuth()
-  const isAdmin = user?.role === "admin" || user?.role === "super_admin"
   const [open, setOpen] = useState(false)
-  const [dbApps, setDbApps] = useState([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    const fetchApps = async () => {
-      try {
-        const response = await fetch('/api/apps')
-        if (response.ok) {
-          const data = await response.json()
-          setDbApps(data.apps || [])
-        }
-      } catch (error) {
-        console.error('Error fetching apps:', error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchApps()
-  }, [])
 
   if (!user) return null
 
-  const accessibleApps = getAccessibleApps(user.roles || [user.role])
-  const accessibleAdminApps = isAdmin ? getAccessibleAdminApps(user.roles || [user.role]) : []
+  const userRoles = user.roles || []
+  const isAdmin = userRoles.includes('admin') || userRoles.includes('super_admin')
+  
+  // Get all accessible apps from APP_CONFIGS
+  const accessibleApps = getAccessibleApps(userRoles)
+  const accessibleAdminApps = isAdmin ? getAccessibleAdminApps(userRoles) : []
   const allApps = [...accessibleApps, ...accessibleAdminApps]
 
-  // Convert database apps to AppConfig format and merge with hardcoded fallbacks
-  const dbAppsFormatted = dbApps.map(app => ({
-    id: app.slug,
-    name: app.name,
-    description: app.description,
-    icon: app.icon || "Grid3X3",
-    href: `/dashboard/${app.slug}`,
-    color: app.color || "from-gray-500 to-gray-600",
-    requiredRoles: app.required_roles || [],
-    isActive: app.is_active,
-  }))
-
-  // Hardcoded fallback apps
-  const fallbackApps: AppConfig[] = [
-    {
-      id: "solebrew",
-      name: "SoleBrew",
-      description: "Coffee shop management platform",
-      icon: "Coffee",
-      href: "/dashboard/solebrew",
-      color: "from-amber-500 to-orange-600",
-      requiredRoles: ["admin", "solebrew-admin", "solebrew-member", "franchise-owner"],
-      isActive: true,
-    },
-    {
-      id: "chimpanion",
-      name: "Chimpanion",
-      description: "AI companion platform",
-      icon: "Bot",
-      href: "/dashboard/chimpanion",
-      color: "from-purple-500 to-pink-600",
-      requiredRoles: ["admin", "chimpanion-admin", "chimpanion-member"],
-      isActive: true,
-    },
-  ]
-
-  // Merge database apps with fallbacks, preferring database apps
-  const allPossibleApps = [...dbAppsFormatted]
-  
-  // Add fallback apps if they don't exist in database
-  fallbackApps.forEach(fallbackApp => {
-    if (!dbAppsFormatted.find(dbApp => dbApp.id === fallbackApp.id)) {
-      allPossibleApps.push(fallbackApp)
-    }
-  })
-
-  if (isAdmin) {
-    allPossibleApps.push({
-      id: "admin-dashboard",
-      name: "System Admin",
-      description: "Platform administration",
-      icon: "Settings",
-      href: "/admin",
-      color: "from-slate-500 to-slate-700",
-      requiredRoles: ["admin"],
-      isActive: true,
-    })
-  }
-
   const hasAccess = (app: AppConfig) => {
-    return user.role === "admin" || user.role === "super_admin" || app.requiredRoles?.some((role) => user.role === role)
+    return userRoles.includes('super_admin') || 
+           userRoles.includes('admin') || 
+           app.requiredRoles?.some((role) => userRoles.includes(role)) ||
+           (app.requiredRole && userRoles.includes(app.requiredRole))
   }
 
   const hasAnyAccess = allApps.length > 0
@@ -138,9 +67,10 @@ export function AppSwitcher() {
           )}
 
           <div className="grid grid-cols-1 gap-3">
-            {allPossibleApps.map((app) => {
+            {allApps.map((app) => {
               const Icon = iconMap[app.icon as keyof typeof iconMap] || Grid3X3
               const accessible = hasAccess(app)
+              const gradientColor = app.color.includes('gradient') ? app.color : `bg-gradient-to-br ${app.color}`
 
               if (accessible) {
                 return (
@@ -150,7 +80,7 @@ export function AppSwitcher() {
                     onClick={() => setOpen(false)}
                     className="flex items-center gap-3 p-3 rounded-lg border hover:bg-accent transition-colors"
                   >
-                    <div className={`p-2 rounded-md bg-gradient-to-br ${app.color} text-white`}>
+                    <div className={`p-2 rounded-md ${gradientColor} text-white`}>
                       <Icon className="h-4 w-4" />
                     </div>
                     <div className="flex-1">

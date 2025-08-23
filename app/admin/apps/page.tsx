@@ -319,23 +319,23 @@ export default function AppManagement() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push(`/admin/apps/${app.id}`)}>
                           <Edit className="mr-2 h-4 w-4" />
                           Edit App
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push(`/admin/apps/${app.id}/users`)}>
                           <Users className="mr-2 h-4 w-4" />
                           Manage Users
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push(`/admin/apps/${app.id}?tab=settings`)}>
                           <Settings className="mr-2 h-4 w-4" />
                           Settings
                         </DropdownMenuItem>
-                        <DropdownMenuItem>
+                        <DropdownMenuItem onClick={() => router.push(`/admin/logs?app=${app.id}`)}>
                           <Activity className="mr-2 h-4 w-4" />
                           View Logs
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem className="text-red-600" onClick={() => alert(`Delete ${app.name}?\n\nThis feature is not implemented yet.`)}>
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete App
                         </DropdownMenuItem>
