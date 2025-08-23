@@ -66,9 +66,10 @@ export async function GET(
     let query = supabase.from('users').select('*')
     
     if (userId.startsWith('phone-')) {
-      // Phone user slug: phone-1234
-      const lastFourDigits = userId.replace('phone-', '')
-      query = query.like('phone', `%${lastFourDigits}`)
+      // Phone user slug: phone-14076698510 (full phone number)
+      const phoneDigits = userId.replace('phone-', '')
+      const phoneEmail = `phone_${phoneDigits}@privy.user`
+      query = query.eq('email', phoneEmail)
     } else if (userId.startsWith('wallet-')) {
       // Wallet user slug: wallet-abc123
       const firstSixChars = userId.replace('wallet-', '').toLowerCase()
@@ -91,10 +92,39 @@ export async function GET(
       }, { status: 404 })
     }
 
+    // Extract phone and wallet from user data
+    let phone = null
+    let wallet = null
+    let displayEmail = user.email
+    
+    // Check if this is a phone user
+    if (user.email?.startsWith('phone_') && user.email?.endsWith('@privy.user')) {
+      // Extract phone number from email format: phone_14076698510@privy.user
+      const phoneDigits = user.email.replace('phone_', '').replace('@privy.user', '')
+      // Format phone number nicely
+      if (phoneDigits.length === 11 && phoneDigits.startsWith('1')) {
+        // US phone number format
+        phone = `+${phoneDigits.slice(0,1)} ${phoneDigits.slice(1,4)} ${phoneDigits.slice(4,7)} ${phoneDigits.slice(7)}`
+      } else {
+        phone = `+${phoneDigits}`
+      }
+      displayEmail = null // Phone users don't have a real email
+    }
+    
+    // Check if this is a wallet user
+    if (user.email?.startsWith('wallet_') && user.email?.endsWith('@privy.user')) {
+      // Extract wallet from email format: wallet_0x1234abcd@privy.user
+      wallet = user.email.replace('wallet_', '').replace('@privy.user', '')
+      displayEmail = null // Wallet users don't have a real email
+    }
+
     return NextResponse.json({
       success: true,
       user: {
         ...user,
+        email: displayEmail,
+        phone: phone,
+        wallet: wallet,
         apps: ["SoleBrew", "Chimpanion", "Admin Panel"].filter(app => {
           // Filter apps based on user roles
           if (user.roles?.includes("super_admin") || user.roles?.includes("admin")) return true
@@ -104,8 +134,9 @@ export async function GET(
         }),
         status: user.roles?.length > 0 ? "active" : "pending",
         linkedAccounts: {
-          phone: null,
-          wallet: null
+          email: displayEmail,
+          phone: phone,
+          wallet: wallet
         }
       }
     })
@@ -230,8 +261,9 @@ export async function PUT(
       })
     
     if (userId.startsWith('phone-')) {
-      const lastFourDigits = userId.replace('phone-', '')
-      updateQuery = updateQuery.like('phone', `%${lastFourDigits}`)
+      const phoneDigits = userId.replace('phone-', '')
+      const phoneEmail = `phone_${phoneDigits}@privy.user`
+      updateQuery = updateQuery.eq('email', phoneEmail)
     } else if (userId.startsWith('wallet-')) {
       const firstSixChars = userId.replace('wallet-', '').toLowerCase()
       updateQuery = updateQuery.like('name', `%${firstSixChars}%`)
@@ -296,8 +328,9 @@ export async function DELETE(
     let deleteQuery = supabase.from('users').delete()
     
     if (userId.startsWith('phone-')) {
-      const lastFourDigits = userId.replace('phone-', '')
-      deleteQuery = deleteQuery.like('phone', `%${lastFourDigits}`)
+      const phoneDigits = userId.replace('phone-', '')
+      const phoneEmail = `phone_${phoneDigits}@privy.user`
+      deleteQuery = deleteQuery.eq('email', phoneEmail)
     } else if (userId.startsWith('wallet-')) {
       const firstSixChars = userId.replace('wallet-', '').toLowerCase()
       deleteQuery = deleteQuery.like('name', `%${firstSixChars}%`)

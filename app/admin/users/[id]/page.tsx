@@ -411,70 +411,83 @@ export default function EditUser() {
                   <CardDescription>Update user's basic profile information</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="grid gap-4 md:grid-cols-2">
-                    <div className="space-y-2">
-                      <Label htmlFor="name">Full Name</Label>
-                      <Input
-                        id="name"
-                        value={user.name || ""}
-                        onChange={(e) => setUser({ ...user, name: e.target.value })}
-                        placeholder="Enter full name"
-                      />
+                  <div className="space-y-4">
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="space-y-2">
+                        <Label htmlFor="name">Full Name</Label>
+                        <Input
+                          id="name"
+                          value={user.name || ""}
+                          onChange={(e) => setUser({ ...user, name: e.target.value })}
+                          placeholder="Enter full name"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="privy-id">Privy ID</Label>
+                        <Input
+                          id="privy-id"
+                          value={user.id}
+                          disabled
+                          className="bg-gray-50 font-mono text-xs"
+                        />
+                      </div>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="flex items-center gap-2">
-                        {getUserAuthMethod(user) === 'email' ? (
-                          <>
-                            <Mail className="h-4 w-4" />
-                            Email Address
-                          </>
-                        ) : getUserAuthMethod(user) === 'phone' ? (
-                          <>
-                            <Phone className="h-4 w-4" />
-                            Phone Number (Primary Auth)
-                          </>
-                        ) : (
-                          <>
-                            <Wallet className="h-4 w-4" />
-                            Wallet Address
-                          </>
-                        )}
-                      </Label>
-                      <Input
-                        id="email"
-                        value={getUserDisplayEmail(user)}
-                        disabled
-                        className="bg-gray-50"
-                      />
-                      <div className="flex items-center justify-between mt-1">
-                        <p className="text-xs text-muted-foreground">
-                          {getUserAuthMethod(user) === 'email' 
-                            ? 'Email authentication' 
-                            : getUserAuthMethod(user) === 'phone'
-                            ? 'SMS authentication'
-                            : 'Wallet authentication'} (managed by Privy)
-                        </p>
+                    
+                    {/* Authentication Method */}
+                    <div className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="flex items-center gap-2">
+                          {getUserAuthMethod(user) === 'email' && <Mail className="h-4 w-4" />}
+                          {getUserAuthMethod(user) === 'phone' && <Phone className="h-4 w-4" />}
+                          {getUserAuthMethod(user) === 'wallet' && <Wallet className="h-4 w-4" />}
+                          Primary Authentication Method
+                        </Label>
                         <Badge variant="outline" className="text-xs">
-                          {getUserAuthMethod(user).toUpperCase()} USER
+                          {getUserAuthMethod(user).toUpperCase()} AUTH
                         </Badge>
                       </div>
+                      
+                      {/* Email Field */}
+                      {user.email && (
+                        <div className="space-y-1">
+                          <Label htmlFor="email" className="text-sm">Email Address</Label>
+                          <Input
+                            id="email"
+                            value={user.email}
+                            disabled
+                            className="bg-white dark:bg-gray-900"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Phone Field */}
+                      {user.phone && (
+                        <div className="space-y-1">
+                          <Label htmlFor="phone" className="text-sm">Phone Number</Label>
+                          <Input
+                            id="phone"
+                            value={user.phone}
+                            disabled
+                            className="bg-white dark:bg-gray-900"
+                          />
+                        </div>
+                      )}
+                      
+                      {/* Wallet Field */}
+                      {user.wallet && (
+                        <div className="space-y-1">
+                          <Label htmlFor="wallet" className="text-sm">Wallet Address</Label>
+                          <Input
+                            id="wallet"
+                            value={user.wallet}
+                            disabled
+                            className="bg-white dark:bg-gray-900 font-mono text-xs"
+                          />
+                        </div>
+                      )}
                     </div>
                   </div>
 
-                  {user.phone && (
-                    <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <div>
-                        <Input
-                          id="phone"
-                          value={user.phone}
-                          disabled
-                          className="bg-gray-50"
-                        />
-                        <p className="text-xs text-muted-foreground">Phone number from Privy authentication</p>
-                      </div>
-                    </div>
-                  )}
 
                   <div className="space-y-2">
                     <Label htmlFor="status">Account Status</Label>
