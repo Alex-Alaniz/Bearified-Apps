@@ -73,7 +73,7 @@ export function ModularSidebar() {
   ]
 
   return (
-    <Sidebar>
+    <Sidebar variant="sidebar" collapsible="offcanvas" side="left" className="border-r">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
