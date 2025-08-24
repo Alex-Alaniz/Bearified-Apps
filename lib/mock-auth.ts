@@ -23,7 +23,7 @@ export const MOCK_USERS: User[] = [
     email: "alex@alexalaniz.com",
     name: "Alex Alaniz",
     role: "super_admin",
-    roles: ["solebrew", "chimpanion", "admin"],
+    roles: ["super_admin", "admin", "solebrew", "chimpanion", "golf-admin"],
     createdAt: "2024-01-01T00:00:00Z",
   },
   {

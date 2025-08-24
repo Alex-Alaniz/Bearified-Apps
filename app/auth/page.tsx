@@ -9,7 +9,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
 import { useBearifiedAuth } from "@/lib/privy-auth-context"
-import { Mail, ArrowRight, Shield, Coffee, Bot, LogIn, Phone, Wallet } from "lucide-react"
+import { Mail, ArrowRight, Shield, Coffee, Bot, Globe, Settings, LogIn, Phone, Wallet } from "lucide-react"
+import { APP_CONFIGS } from "@/lib/app-configs"
 
 export default function AuthPage() {
   const router = useRouter()
@@ -64,10 +65,10 @@ export default function AuthPage() {
 
   if ((USE_PRIVY && !privyHooks?.ready) || bearifiedLoading || redirecting) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-4">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-violet-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">
             {redirecting ? "Redirecting to dashboard..." : "Loading authentication..."}
           </p>
         </div>
@@ -76,52 +77,77 @@ export default function AuthPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="w-full max-w-4xl grid lg:grid-cols-2 gap-8 items-center">
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 flex items-center justify-center p-4 relative overflow-hidden">
+      {/* Background decoration */}
+      <div className="absolute inset-0 opacity-30">
+        <div className="absolute top-0 left-0 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse"></div>
+        <div className="absolute bottom-0 right-0 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-2000"></div>
+        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl animate-pulse animation-delay-4000"></div>
+      </div>
+      <div className="w-full max-w-6xl grid lg:grid-cols-2 gap-12 items-center relative z-10">
         {/* Left side - Branding */}
-        <div className="text-center lg:text-left space-y-6">
-          <div className="flex items-center justify-center lg:justify-start space-x-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-              <span className="text-white font-bold text-xl">B</span>
+        <div className="text-center lg:text-left space-y-8">
+          <div className="flex items-center justify-center lg:justify-start space-x-4">
+            <div className="w-14 h-14 bg-gradient-to-br from-violet-600 via-purple-600 to-pink-600 rounded-2xl flex items-center justify-center shadow-xl shadow-purple-500/25">
+              <span className="text-white font-bold text-2xl">B</span>
             </div>
             <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent">
+              <h1 className="text-4xl font-bold bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Bearified Apps
               </h1>
-              <p className="text-gray-600 text-sm">Unified Business Platform</p>
+              <p className="text-gray-600 text-base font-medium">Unified Business Platform</p>
             </div>
           </div>
 
           <div className="space-y-4">
-            <h2 className="text-2xl font-semibold text-gray-800">Welcome to your business ecosystem</h2>
-            <p className="text-gray-600 text-lg">Access SoleBrew, Chimpanion, and more from one secure platform</p>
+            <h2 className="text-3xl font-bold text-gray-900 leading-tight">Welcome to your business ecosystem</h2>
+            <p className="text-gray-700 text-xl leading-relaxed">Access SoleBrew, Chimpanion, Golf, and more from one secure platform</p>
           </div>
 
-          {/* App showcase */}
-          <div className="grid grid-cols-2 gap-4 max-w-sm mx-auto lg:mx-0">
-            <div className="bg-white rounded-lg p-4 shadow-sm border">
-              <div className="w-8 h-8 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg flex items-center justify-center mb-2">
-                <Coffee className="h-4 w-4 text-white" />
-              </div>
-              <h3 className="font-semibold text-sm">SoleBrew</h3>
-              <p className="text-xs text-gray-600">Coffee Management</p>
-            </div>
-            <div className="bg-white rounded-lg p-4 shadow-sm border">
-              <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-teal-600 rounded-lg flex items-center justify-center mb-2">
-                <Bot className="h-4 w-4 text-white" />
-              </div>
-              <h3 className="font-semibold text-sm">Chimpanion</h3>
-              <p className="text-xs text-gray-600">Security & Intel</p>
+          {/* App showcase - Dynamic from app configs */}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 gap-4 max-w-lg mx-auto lg:mx-0">
+              {APP_CONFIGS.filter(app => app.id !== 'admin' && app.isActive).map((app) => {
+                const IconComponent = app.icon === 'Coffee' ? Coffee : 
+                                    app.icon === 'Bot' ? Bot : 
+                                    app.icon === 'Globe' ? Globe : Settings
+                
+                return (
+                  <div key={app.id} className="bg-white/90 backdrop-blur-sm rounded-xl p-4 shadow-lg border border-white/20 hover:shadow-xl transition-all duration-300 hover:scale-[1.02]">
+                    <div className="flex items-start space-x-3">
+                      <div className={`w-12 h-12 bg-gradient-to-br ${app.color} rounded-xl flex items-center justify-center shadow-lg flex-shrink-0`}>
+                        <IconComponent className="h-6 w-6 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between mb-1">
+                          <h3 className="font-bold text-lg text-gray-900">{app.name}</h3>
+                          <Badge 
+                            variant={app.status === 'production' ? 'default' : 'secondary'} 
+                            className={`text-xs font-medium ${
+                              app.status === 'production' 
+                                ? 'bg-green-100 text-green-700 border-green-200' 
+                                : 'bg-amber-100 text-amber-700 border-amber-200'
+                            }`}
+                          >
+                            {app.status === 'production' ? 'Live' : 'Beta'}
+                          </Badge>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">{app.description}</p>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           </div>
         </div>
 
         {/* Right side - Auth */}
-        <div className="space-y-6">
-          <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm">
-            <CardHeader className="text-center">
-              <CardTitle className="text-2xl">Sign In</CardTitle>
-              <CardDescription>
+        <div className="space-y-8">
+          <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-md">
+            <CardHeader className="text-center pb-6">
+              <CardTitle className="text-3xl font-bold text-gray-900">Sign In</CardTitle>
+              <CardDescription className="text-base text-gray-600">
                 {USE_PRIVY 
                   ? "Use your account to access Bearified Apps" 
                   : "Development mode - Mock authentication active"}
@@ -132,7 +158,7 @@ export default function AuthPage() {
                 <div className="space-y-4">
                   <Button
                     onClick={handlePrivyLogin}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    className="w-full bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 hover:from-violet-700 hover:via-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25 transition-all duration-200"
                     size="lg"
                   >
                     <LogIn className="mr-2 h-5 w-5" />
@@ -174,10 +200,11 @@ export default function AuthPage() {
                   
                   <Button
                     onClick={() => router.push("/dashboard")}
-                    className="w-full bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700"
+                    className="w-full bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 hover:from-violet-700 hover:via-purple-700 hover:to-pink-700 shadow-lg shadow-purple-500/25 transition-all duration-200"
+                    size="lg"
                   >
                     Continue to Dashboard
-                    <ArrowRight className="ml-2 h-4 w-4" />
+                    <ArrowRight className="ml-2 h-5 w-5" />
                   </Button>
                 </div>
               )}
@@ -185,13 +212,13 @@ export default function AuthPage() {
           </Card>
 
           {/* Info Card */}
-          <Card className="shadow-lg border-0 bg-white/60 backdrop-blur-sm">
+          <Card className="shadow-xl border-0 bg-white/90 backdrop-blur-md">
             <CardHeader>
-              <CardTitle className="text-lg flex items-center space-x-2">
-                <Shield className="h-5 w-5" />
+              <CardTitle className="text-xl font-bold flex items-center space-x-3 text-gray-900">
+                <Shield className="h-6 w-6 text-violet-600" />
                 <span>Secure Access</span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base text-gray-600">
                 {USE_PRIVY 
                   ? "Your account is protected with industry-standard security" 
                   : "Enable Privy authentication for production use"}

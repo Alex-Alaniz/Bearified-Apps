@@ -52,7 +52,7 @@ export function ModularSidebar() {
   const userRoles = user?.roles || []
   const isAdmin = userRoles.includes('super_admin') || userRoles.includes('admin')
   
-  // Get accessible apps dynamically
+  // Get accessible apps dynamically (exclude admin panel as it's handled separately)
   const accessibleApps = getAccessibleApps(userRoles).filter(app => app.id !== 'admin')
   
   // Create dynamic applications section
@@ -73,7 +73,7 @@ export function ModularSidebar() {
   ]
 
   return (
-    <Sidebar variant="sidebar" collapsible="offcanvas" side="left" className="border-r">
+    <Sidebar className="border-r">
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
