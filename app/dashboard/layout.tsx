@@ -135,7 +135,7 @@ export default function DashboardLayout({
                 <Link
                   href="/dashboard/solebrew"
                   className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-                    hasRole("solebrew") || hasRole("admin") || hasRole("super_admin") ? "hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-700 dark:text-amber-400" : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    hasRole("solebrew") || hasRole("solebrew-admin") || hasRole("solebrew-member") || hasRole("admin") || hasRole("super_admin") ? "hover:bg-amber-50 dark:hover:bg-amber-900/20 text-amber-700 dark:text-amber-400" : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -143,7 +143,7 @@ export default function DashboardLayout({
                     <Coffee className="h-5 w-5" />
                     <span>SoleBrew</span>
                   </div>
-                  {hasRole("solebrew") || hasRole("admin") || hasRole("super_admin") ? (
+                  {hasRole("solebrew") || hasRole("solebrew-admin") || hasRole("solebrew-member") || hasRole("admin") || hasRole("super_admin") ? (
                     <Badge variant="default" className="text-xs">
                       Active
                     </Badge>
@@ -157,7 +157,7 @@ export default function DashboardLayout({
                 <Link
                   href="/dashboard/chimpanion"
                   className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-                    hasRole("chimpanion") || hasRole("admin") || hasRole("super_admin") ? "hover:bg-green-50 dark:hover:bg-green-900/20 text-green-700 dark:text-green-400" : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    hasRole("chimpanion") || hasRole("chimpanion-admin") || hasRole("chimpanion-member") || hasRole("admin") || hasRole("super_admin") ? "hover:bg-green-50 dark:hover:bg-green-900/20 text-green-700 dark:text-green-400" : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -165,7 +165,7 @@ export default function DashboardLayout({
                     <Bot className="h-5 w-5" />
                     <span>Chimpanion</span>
                   </div>
-                  {hasRole("chimpanion") || hasRole("admin") || hasRole("super_admin") ? (
+                  {hasRole("chimpanion") || hasRole("chimpanion-admin") || hasRole("chimpanion-member") || hasRole("admin") || hasRole("super_admin") ? (
                     <Badge variant="default" className="text-xs">
                       Active
                     </Badge>
@@ -179,7 +179,7 @@ export default function DashboardLayout({
                 <Link
                   href="/dashboard/golf"
                   className={`flex items-center justify-between px-3 py-2 rounded-lg transition-colors ${
-                    hasRole("golf-admin") || hasRole("golf-member") || hasRole("admin") || hasRole("super_admin") ? "hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400" : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
+                    hasRole("golf") || hasRole("golf-admin") || hasRole("golf-member") || hasRole("admin") || hasRole("super_admin") ? "hover:bg-blue-50 dark:hover:bg-blue-900/20 text-blue-700 dark:text-blue-400" : "text-gray-400 dark:text-gray-600 cursor-not-allowed"
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -187,7 +187,7 @@ export default function DashboardLayout({
                     <Globe className="h-5 w-5" />
                     <span>Golf App</span>
                   </div>
-                  {hasRole("golf-admin") || hasRole("golf-member") || hasRole("admin") || hasRole("super_admin") ? (
+                  {hasRole("golf") || hasRole("golf-admin") || hasRole("golf-member") || hasRole("admin") || hasRole("super_admin") ? (
                     <Badge variant="default" className="text-xs">
                       Active
                     </Badge>

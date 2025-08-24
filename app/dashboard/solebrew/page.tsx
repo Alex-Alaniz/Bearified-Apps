@@ -138,7 +138,7 @@ export default function SoleBrewProjectDashboard() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">MJ</AvatarFallback>
+                    <AvatarFallback className="text-xs">AS</AvatarFallback>
                   </Avatar>
                   <Badge variant="default">Done</Badge>
                 </div>
@@ -170,7 +170,7 @@ export default function SoleBrewProjectDashboard() {
                 </div>
                 <div className="flex items-center space-x-2">
                   <Avatar className="h-6 w-6">
-                    <AvatarFallback className="text-xs">KS</AvatarFallback>
+                    <AvatarFallback className="text-xs">AA</AvatarFallback>
                   </Avatar>
                   <Badge variant="secondary">Blocked</Badge>
                 </div>
@@ -371,26 +371,14 @@ export default function SoleBrewProjectDashboard() {
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <Avatar>
-                    <AvatarFallback>MJ</AvatarFallback>
+                    <AvatarFallback>AS</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">Maria Johnson</p>
-                    <p className="text-sm text-gray-500">Frontend Developer</p>
+                    <p className="font-medium">Anson</p>
+                    <p className="text-sm text-gray-500">Developer</p>
                   </div>
                 </div>
                 <Badge variant="outline">Developer</Badge>
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-3">
-                  <Avatar>
-                    <AvatarFallback>KS</AvatarFallback>
-                  </Avatar>
-                  <div>
-                    <p className="font-medium">Kevin Smith</p>
-                    <p className="text-sm text-gray-500">Solana Blockchain Developer</p>
-                  </div>
-                </div>
-                <Badge variant="outline">Blockchain</Badge>
               </div>
             </div>
           </CardContent>

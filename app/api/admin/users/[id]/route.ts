@@ -34,7 +34,7 @@ export async function GET(
             email: privyUser.email,
             name: privyUser.name || "Alex Alaniz",
             roles: privyUser.roles || ["super_admin", "admin", "user"],
-            apps: ["SoleBrew", "Chimpanion", "Admin Panel"], // Static for now
+            apps: ["SoleBrew", "Chimpanion", "Golf App", "Admin Panel"], // Static for now
             status: roles?.length > 0 ? "active" : "pending",
             lastLogin: "Just now",
             linkedAccounts: {
@@ -52,7 +52,7 @@ export async function GET(
             email: "alex@alexalaniz.com",
             name: "Alex Alaniz",
             roles: ["super_admin", "admin", "user"],
-            apps: ["SoleBrew", "Chimpanion", "Admin Panel"],
+            apps: ["SoleBrew", "Chimpanion", "Golf App", "Admin Panel"],
             status: "active",
             lastLogin: "Just now",
             linkedAccounts: {
@@ -137,11 +137,12 @@ export async function GET(
         email: displayEmail,
         phone: phone,
         wallet: wallet,
-        apps: ["SoleBrew", "Chimpanion", "Admin Panel"].filter(app => {
+        apps: ["SoleBrew", "Chimpanion", "Golf App", "Admin Panel"].filter(app => {
           // Filter apps based on user roles
           if (user.roles?.includes("super_admin") || user.roles?.includes("admin")) return true
           if (app === "SoleBrew" && (user.roles?.includes("solebrew") || user.roles?.includes("solebrew-admin") || user.roles?.includes("solebrew-member"))) return true
           if (app === "Chimpanion" && (user.roles?.includes("chimpanion") || user.roles?.includes("chimpanion-admin") || user.roles?.includes("chimpanion-member"))) return true
+          if (app === "Golf App" && (user.roles?.includes("golf") || user.roles?.includes("golf-admin") || user.roles?.includes("golf-member"))) return true
           return false
         }),
         // Check if status is stored in avatar field (workaround for missing status column)
@@ -171,13 +172,57 @@ export async function PUT(
     const userId = params.id
     const body = await request.json()
     const { name, roles, apps, status, linkedAccounts } = body
+    
+    // Map apps to their corresponding roles
+    let finalRoles = roles || []
+    
+    // Handle app-based role assignments
+    if (apps && Array.isArray(apps)) {
+      // Remove all app-specific roles first
+      finalRoles = finalRoles.filter(role => 
+        !['solebrew', 'solebrew-admin', 'solebrew-member', 
+          'chimpanion', 'chimpanion-admin', 'chimpanion-member',
+          'golf', 'golf-admin', 'golf-member'].includes(role)
+      )
+      
+      // Add back roles based on selected apps
+      if (apps.includes('SoleBrew')) {
+        // If user is admin, give them admin role for the app, otherwise member
+        if (finalRoles.includes('admin') || finalRoles.includes('super_admin')) {
+          finalRoles.push('solebrew-admin')
+        } else {
+          finalRoles.push('solebrew-member')
+        }
+      }
+      
+      if (apps.includes('Chimpanion')) {
+        if (finalRoles.includes('admin') || finalRoles.includes('super_admin')) {
+          finalRoles.push('chimpanion-admin')
+        } else {
+          finalRoles.push('chimpanion-member')
+        }
+      }
+      
+      if (apps.includes('Golf App') || apps.includes('Golf')) {
+        if (finalRoles.includes('admin') || finalRoles.includes('super_admin')) {
+          finalRoles.push('golf-admin')
+        } else {
+          finalRoles.push('golf-member')
+        }
+      }
+      
+      // Admin Panel requires admin or super_admin role
+      if (apps.includes('Admin Panel') && !finalRoles.includes('admin') && !finalRoles.includes('super_admin')) {
+        finalRoles.push('admin')
+      }
+    }
 
     // For Alex's account (super admin)
     if (userId === "999" || userId === "super-admin" || userId === "alex") {
       console.log('Updating Privy user:', {
         userId,
         name,
-        roles,
+        roles: finalRoles,
         apps,
         status,
         linkedAccounts
@@ -196,7 +241,7 @@ export async function PUT(
           .from('users')
           .update({
             name,
-            roles,
+            roles: finalRoles,
             // Store status in avatar field as workaround for missing status column
             avatar: status ? `status:${status}` : existingUser.avatar,
             updated_at: new Date().toISOString()
@@ -218,7 +263,14 @@ export async function PUT(
             email: updatedUser.email,
             name: updatedUser.name,
             roles: updatedUser.roles,
-            apps: ["SoleBrew", "Chimpanion", "Admin Panel"], // Static for now
+            apps: apps || ["SoleBrew", "Chimpanion", "Golf App", "Admin Panel"].filter(app => {
+              // Filter apps based on updated roles
+              if (updatedUser.roles?.includes("super_admin") || updatedUser.roles?.includes("admin")) return true
+              if (app === "SoleBrew" && (updatedUser.roles?.includes("solebrew") || updatedUser.roles?.includes("solebrew-admin") || updatedUser.roles?.includes("solebrew-member"))) return true
+              if (app === "Chimpanion" && (updatedUser.roles?.includes("chimpanion") || updatedUser.roles?.includes("chimpanion-admin") || updatedUser.roles?.includes("chimpanion-member"))) return true
+              if (app === "Golf App" && (updatedUser.roles?.includes("golf") || updatedUser.roles?.includes("golf-admin") || updatedUser.roles?.includes("golf-member"))) return true
+              return false
+            }),
             status: updatedUser.roles?.length > 0 ? "active" : "pending",
             lastLogin: "Just now",
             linkedAccounts: {
@@ -235,7 +287,7 @@ export async function PUT(
             id: 'super-admin-uuid', // Use a fixed ID for the super admin
             email: 'alex@alexalaniz.com',
             name,
-            roles,
+            roles: finalRoles,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
           })
@@ -255,7 +307,14 @@ export async function PUT(
             email: newUser.email,
             name: newUser.name,
             roles: newUser.roles,
-            apps: ["SoleBrew", "Chimpanion", "Admin Panel"], // Static for now
+            apps: apps || ["SoleBrew", "Chimpanion", "Golf App", "Admin Panel"].filter(app => {
+              // Filter apps based on updated roles
+              if (newUser.roles?.includes("super_admin") || newUser.roles?.includes("admin")) return true
+              if (app === "SoleBrew" && (newUser.roles?.includes("solebrew") || newUser.roles?.includes("solebrew-admin") || newUser.roles?.includes("solebrew-member"))) return true
+              if (app === "Chimpanion" && (newUser.roles?.includes("chimpanion") || newUser.roles?.includes("chimpanion-admin") || newUser.roles?.includes("chimpanion-member"))) return true
+              if (app === "Golf App" && (newUser.roles?.includes("golf") || newUser.roles?.includes("golf-admin") || newUser.roles?.includes("golf-member"))) return true
+              return false
+            }),
             status: newUser.roles?.length > 0 ? "active" : "pending",
             lastLogin: "Just now",
             linkedAccounts: {
@@ -271,7 +330,7 @@ export async function PUT(
     let updateQuery = supabase.from('users')
       .update({
         name,
-        roles,
+        roles: finalRoles,
         // Store status in avatar field as workaround for missing status column
         avatar: status ? `status:${status}` : null,
         updated_at: new Date().toISOString()
@@ -305,11 +364,12 @@ export async function PUT(
       message: 'User updated successfully',
       user: {
         ...user,
-        apps: ["SoleBrew", "Chimpanion", "Admin Panel"].filter(app => {
+        apps: apps || ["SoleBrew", "Chimpanion", "Golf App", "Admin Panel"].filter(app => {
           // Filter apps based on user roles
           if (user.roles?.includes("super_admin") || user.roles?.includes("admin")) return true
           if (app === "SoleBrew" && (user.roles?.includes("solebrew") || user.roles?.includes("solebrew-admin") || user.roles?.includes("solebrew-member"))) return true
           if (app === "Chimpanion" && (user.roles?.includes("chimpanion") || user.roles?.includes("chimpanion-admin") || user.roles?.includes("chimpanion-member"))) return true
+          if (app === "Golf App" && (user.roles?.includes("golf") || user.roles?.includes("golf-admin") || user.roles?.includes("golf-member"))) return true
           return false
         }),
         // Use stored status from avatar field, or compute from roles

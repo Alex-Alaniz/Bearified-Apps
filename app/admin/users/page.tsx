@@ -44,11 +44,12 @@ export default function UserManagement() {
               // Use same status logic as individual user page - check avatar field first
               status: user.avatar?.startsWith('status:') ? user.avatar.replace('status:', '') : (user.roles?.length > 0 ? "active" : "pending"),
               lastLogin: user.last_login_at ? new Date(user.last_login_at).toLocaleDateString() : "Never",
-              apps: ["SoleBrew", "Chimpanion", "Admin Panel"].filter(app => {
+              apps: ["SoleBrew", "Chimpanion", "Golf App", "Admin Panel"].filter(app => {
                 // Filter apps based on user roles
                 if (user.roles?.includes("super_admin") || user.roles?.includes("admin")) return true
                 if (app === "SoleBrew" && (user.roles?.includes("solebrew") || user.roles?.includes("solebrew-admin") || user.roles?.includes("solebrew-member"))) return true
                 if (app === "Chimpanion" && (user.roles?.includes("chimpanion") || user.roles?.includes("chimpanion-admin") || user.roles?.includes("chimpanion-member"))) return true
+                if (app === "Golf App" && (user.roles?.includes("golf") || user.roles?.includes("golf-admin") || user.roles?.includes("golf-member"))) return true
                 return false
               }),
             }))

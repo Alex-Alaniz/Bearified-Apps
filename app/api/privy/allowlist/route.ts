@@ -11,7 +11,7 @@ const supabase = createClient(
 )
 
 interface AllowlistEntry {
-  type: 'email' | 'phone_number' | 'wallet_address'
+  type: 'email' | 'phone' | 'phone_number' | 'wallet_address'
   value: string
   app_id: string
 }
@@ -29,15 +29,22 @@ export async function GET() {
 
     if (!privyResponse.ok) {
       const errorText = await privyResponse.text()
-      console.error('Failed to fetch Privy allowlist:', errorText)
+      console.error('Failed to fetch Privy allowlist:', {
+        status: privyResponse.status,
+        statusText: privyResponse.statusText,
+        errorText,
+        appId: PRIVY_APP_ID,
+        hasSecret: !!PRIVY_APP_SECRET
+      })
       return NextResponse.json({
         success: false,
-        error: 'Failed to fetch allowlist from Privy'
+        error: `Failed to fetch allowlist from Privy: ${privyResponse.status} ${privyResponse.statusText}`,
+        details: errorText
       }, { status: 500 })
     }
 
     const allowlist: AllowlistEntry[] = await privyResponse.json()
-    console.log(`Fetched ${allowlist.length} entries from Privy allowlist`)
+    console.log(`Fetched ${allowlist.length} entries from Privy allowlist:`, allowlist.map(e => `${e.type}: ${e.value}`).join(', '))
 
     // Sync with our database
     const syncResults = {
@@ -57,10 +64,12 @@ export async function GET() {
         if (entry.type === 'email') {
           email = entry.value
           name = entry.value.split('@')[0]
-        } else if (entry.type === 'phone_number') {
+        } else if (entry.type === 'phone' || entry.type === 'phone_number') {
           // For phone numbers, create a placeholder email
-          email = `phone_${entry.value.replace(/\D/g, '')}@privy.user`
-          name = `Phone User (${entry.value})`
+          // Normalize phone number by removing all non-digits
+          const normalizedPhone = entry.value.replace(/\D/g, '')
+          email = `phone_${normalizedPhone}@privy.user`
+          name = `${entry.value}` // Use the phone number as the name for better identification
         } else if (entry.type === 'wallet_address') {
           // For wallets, create a placeholder email
           email = `wallet_${entry.value.slice(0, 8).toLowerCase()}@privy.user`
@@ -75,9 +84,11 @@ export async function GET() {
           .select('*')
           .eq('email', email)
           .single()
+        
+        console.log(`Checking user ${email}: ${existingUser ? 'EXISTS' : 'NOT FOUND'}`)
 
         if (!existingUser) {
-          // Create new user from allowlist
+          // Create new user from allowlist with default user role
           const { data: newUser, error: createError } = await supabase
             .from('users')
             .insert({
@@ -187,9 +198,10 @@ export async function POST(request: NextRequest) {
     if (type === 'email') {
       email = value
       name = value.split('@')[0]
-    } else if (type === 'phone_number') {
-      email = `phone_${value.replace(/\D/g, '')}@privy.user`
-      name = `Phone User (${value})`
+    } else if (type === 'phone' || type === 'phone_number') {
+      const normalizedPhone = value.replace(/\D/g, '')
+      email = `phone_${normalizedPhone}@privy.user`
+      name = `${value}` // Use the phone number as the name
     } else {
       email = `wallet_${value.slice(0, 8).toLowerCase()}@privy.user`
       name = `Wallet User (${value.slice(0, 6)}...${value.slice(-4)})`
@@ -201,7 +213,7 @@ export async function POST(request: NextRequest) {
         id: `privy_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         email,
         name,
-        roles: [], // No roles by default
+        roles: [], // No roles by default - admin must grant access
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       })
