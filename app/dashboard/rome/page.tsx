@@ -33,7 +33,9 @@ import {
   CheckCircle2,
   XCircle,
   Crown,
-  Shield
+  Shield,
+  Smartphone,
+  Zap
 } from "lucide-react"
 import { useAuth } from "@/lib/privy-auth-context"
 
@@ -61,47 +63,55 @@ export default function RomeProjectDashboard() {
   // Initialize with current sprint data
   const [currentSprint, setCurrentSprint] = useState<Sprint>({
     id: "sprint-1",
-    name: "Sprint 1: Empire Foundation",
-    description: "Building the core infrastructure for Roman empire management",
+    name: "Sprint 1: Streaming Platform Foundation",
+    description: "Building core crypto streaming dashboard infrastructure",
     startDate: "2024-01-15",
     endDate: "2024-01-29",
     tasks: [
       {
         id: "task-1",
-        title: "Senate Management System",
-        description: "Create interface for managing senators and votes",
+        title: "Live Streaming Integration",
+        description: "Integrate Twitch/YouTube streaming APIs for real-time feeds",
         status: "done",
-        assignee: "AA",
+        assignee: "RJ",
         priority: "high"
       },
       {
         id: "task-2", 
-        title: "Legion Command Center",
-        description: "Build military unit management and deployment system",
+        title: "Crypto Donation System",
+        description: "Build multi-chain crypto donation widget for streams",
         status: "in_progress",
-        assignee: "AS",
+        assignee: "RJ",
         priority: "critical"
       },
       {
         id: "task-3",
-        title: "Province Administration",
-        description: "Develop tools for managing Roman provinces",
+        title: "Analytics Dashboard",
+        description: "Create real-time viewer analytics and earnings tracking",
         status: "todo",
         assignee: "AA",
         priority: "high"
+      },
+      {
+        id: "task-4",
+        title: "Chat Token Integration",
+        description: "Implement token-gated chat features for subscribers",
+        status: "todo",
+        assignee: "RJ",
+        priority: "medium"
       }
     ]
   })
 
   const [newTaskDialog, setNewTaskDialog] = useState(false)
   const [editingTask, setEditingTask] = useState<Task | null>(null)
-  const [projectProgress, setProjectProgress] = useState(35)
+  const [projectProgress, setProjectProgress] = useState(25)
   
   // Form state for new/edit task
   const [taskForm, setTaskForm] = useState({
     title: "",
     description: "",
-    assignee: "AA",
+    assignee: "RJ",
     status: "todo" as Task["status"],
     priority: "medium" as Task["priority"]
   })
@@ -139,7 +149,7 @@ export default function RomeProjectDashboard() {
     setTaskForm({
       title: "",
       description: "",
-      assignee: "AA",
+      assignee: "RJ",
       status: "todo",
       priority: "medium"
     })
@@ -189,8 +199,8 @@ export default function RomeProjectDashboard() {
             <Building className="h-6 w-6 text-white" />
           </div>
           <div>
-            <h1 className="text-3xl font-bold">Rome Project Hub</h1>
-            <p className="text-gray-600">Ancient Empire Management System Development</p>
+            <h1 className="text-3xl font-bold">Rome Crypto Streamer Dashboard</h1>
+            <p className="text-gray-600">Professional Crypto Streaming Platform Development</p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -242,7 +252,7 @@ export default function RomeProjectDashboard() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{projectProgress}%</div>
-            <p className="text-xs text-muted-foreground">Empire Features Complete</p>
+            <p className="text-xs text-muted-foreground">Streaming Features Complete</p>
             <Progress value={projectProgress} className="mt-2" />
           </CardContent>
         </Card>
@@ -275,12 +285,12 @@ export default function RomeProjectDashboard() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Empire Timeline</CardTitle>
+            <CardTitle className="text-sm font-medium">Platform Timeline</CardTitle>
             <Calendar className="h-4 w-4 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">12w</div>
-            <p className="text-xs text-muted-foreground">Estimated empire launch</p>
+            <div className="text-2xl font-bold">8w</div>
+            <p className="text-xs text-muted-foreground">Estimated platform launch</p>
           </CardContent>
         </Card>
       </div>
@@ -339,8 +349,8 @@ export default function RomeProjectDashboard() {
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
+                            <SelectItem value="RJ">RomeJay (RJ)</SelectItem>
                             <SelectItem value="AA">Alex (AA)</SelectItem>
-                            <SelectItem value="AS">Anson (AS)</SelectItem>
                           </SelectContent>
                         </Select>
                       </div>
@@ -414,43 +424,43 @@ export default function RomeProjectDashboard() {
           <CardHeader>
             <div className="flex items-center space-x-2">
               <Code className="h-5 w-5 text-purple-600" />
-              <CardTitle>Imperial Architecture</CardTitle>
+              <CardTitle>Streaming Architecture</CardTitle>
             </div>
-            <CardDescription>Rome technology stack and empire integrations</CardDescription>
+            <CardDescription>Crypto streaming platform technology stack</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
               <div className="flex items-center space-x-2 p-2 border rounded">
-                <Crown className="h-4 w-4 text-yellow-600" />
-                <span className="text-sm">Imperial Core</span>
+                <Smartphone className="h-4 w-4 text-purple-600" />
+                <span className="text-sm">Stream APIs</span>
               </div>
               <div className="flex items-center space-x-2 p-2 border rounded">
                 <Database className="h-4 w-4 text-green-600" />
-                <span className="text-sm">Senate DB</span>
+                <span className="text-sm">Analytics DB</span>
               </div>
               <div className="flex items-center space-x-2 p-2 border rounded">
-                <Shield className="h-4 w-4 text-red-600" />
-                <span className="text-sm">Legion API</span>
+                <Shield className="h-4 w-4 text-blue-600" />
+                <span className="text-sm">Web3 Wallet</span>
               </div>
               <div className="flex items-center space-x-2 p-2 border rounded">
-                <Building className="h-4 w-4 text-orange-600" />
-                <span className="text-sm">Province UI</span>
+                <Zap className="h-4 w-4 text-yellow-600" />
+                <span className="text-sm">Real-time Chat</span>
               </div>
             </div>
             
             <div className="pt-2">
-              <h4 className="font-medium mb-2">Empire Systems:</h4>
+              <h4 className="font-medium mb-2">Platform Features:</h4>
               <div className="space-y-2">
                 <div className="flex items-center justify-between text-sm">
-                  <span>Senate Management</span>
-                  <Badge variant="outline" className="bg-yellow-50 text-yellow-700">Planning</Badge>
+                  <span>Stream Integration</span>
+                  <Badge variant="outline" className="bg-green-50 text-green-700">Complete</Badge>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span>Legion Command</span>
-                  <Badge variant="outline" className="bg-red-50 text-red-700">In Progress</Badge>
+                  <span>Crypto Donations</span>
+                  <Badge variant="outline" className="bg-blue-50 text-blue-700">In Progress</Badge>
                 </div>
                 <div className="flex items-center justify-between text-sm">
-                  <span>Province Admin</span>
+                  <span>Token Chat</span>
                   <Badge variant="secondary">Pending</Badge>
                 </div>
               </div>
@@ -464,7 +474,7 @@ export default function RomeProjectDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Development Team</CardTitle>
-            <CardDescription>Rome project contributors</CardDescription>
+            <CardDescription>Crypto streamer platform contributors</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
@@ -478,19 +488,19 @@ export default function RomeProjectDashboard() {
                     <p className="text-sm text-gray-500">Project Lead & Full-Stack Dev</p>
                   </div>
                 </div>
-                <Badge>Caesar</Badge>
+                <Badge>Project Lead</Badge>
               </div>
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-3">
                   <Avatar>
-                    <AvatarFallback>AS</AvatarFallback>
+                    <AvatarFallback>RJ</AvatarFallback>
                   </Avatar>
                   <div>
-                    <p className="font-medium">Anson</p>
-                    <p className="text-sm text-gray-500">Developer</p>
+                    <p className="font-medium">RomeJay</p>
+                    <p className="text-sm text-gray-500">Lead Developer & Crypto Expert</p>
                   </div>
                 </div>
-                <Badge variant="outline">Senator</Badge>
+                <Badge variant="outline">Developer</Badge>
               </div>
             </div>
           </CardContent>
@@ -499,25 +509,25 @@ export default function RomeProjectDashboard() {
         <Card>
           <CardHeader>
             <CardTitle>Quick Actions</CardTitle>
-            <CardDescription>Common empire management tasks</CardDescription>
+            <CardDescription>Common streaming platform tasks</CardDescription>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 gap-3">
               <Button variant="outline" className="h-auto flex-col items-start p-3">
                 <GitBranch className="h-4 w-4 mb-1" />
-                <span className="text-sm">Create Legion Branch</span>
+                <span className="text-sm">Create Feature Branch</span>
               </Button>
               <Button variant="outline" className="h-auto flex-col items-start p-3">
                 <Code className="h-4 w-4 mb-1" />
-                <span className="text-sm">Open Colosseum IDE</span>
+                <span className="text-sm">Open Stream IDE</span>
               </Button>
               <Button variant="outline" className="h-auto flex-col items-start p-3">
                 <Database className="h-4 w-4 mb-1" />
-                <span className="text-sm">Senate Console</span>
+                <span className="text-sm">Analytics Console</span>
               </Button>
               <Button variant="outline" className="h-auto flex-col items-start p-3">
                 <Settings className="h-4 w-4 mb-1" />
-                <span className="text-sm">Deploy to Provinces</span>
+                <span className="text-sm">Deploy to CDN</span>
               </Button>
             </div>
           </CardContent>

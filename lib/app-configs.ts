@@ -64,14 +64,15 @@ export const APP_CONFIGS: AppConfig[] = [
   {
     id: "rome",
     name: "Rome",
-    description: "Ancient empire management system",
+    description: "Professional crypto streaming dashboard with analytics & donations",
     icon: "Building",
     color: "#EF4444",
     href: "/dashboard/rome",
     requiredRoles: ["super_admin", "admin", "rome-admin", "rome-member"],
-    features: ["project-management","user-management"],
+    features: ["streaming-integration", "crypto-donations", "analytics", "token-chat"],
     status: "development",
     isActive: true,
+    version: "0.1.0"
   },
 ]
 
