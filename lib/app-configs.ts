@@ -61,6 +61,18 @@ export const APP_CONFIGS: AppConfig[] = [
     status: "development",
     isActive: true,
   },
+  {
+    id: "rome",
+    name: "Rome",
+    description: "Ancient empire management system",
+    icon: "Building",
+    color: "#EF4444",
+    href: "/dashboard/rome",
+    requiredRoles: ["super_admin", "admin", "rome-admin", "rome-member"],
+    features: ["project-management","user-management"],
+    status: "development",
+    isActive: true,
+  },
 ]
 
 // Helper functions for role-based access

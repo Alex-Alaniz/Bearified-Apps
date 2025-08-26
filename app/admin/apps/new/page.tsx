@@ -82,9 +82,17 @@ export default function NewApp() {
     features: [] as string[],
     requiredRoles: [] as string[],
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<{
+    type: 'success' | 'error' | null,
+    message: string,
+    requiresRestart?: boolean
+  }>({ type: null, message: '', requiresRestart: false })
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    setIsSubmitting(true)
+    setSubmitStatus({ type: null, message: '', requiresRestart: false })
     
     try {
       const response = await fetch('/api/admin/apps', {
@@ -95,13 +103,32 @@ export default function NewApp() {
         body: JSON.stringify(formData),
       })
 
+      const data = await response.json()
+
       if (response.ok) {
-        router.push("/admin/apps")
+        setSubmitStatus({
+          type: 'success',
+          message: data.message || 'Application created successfully!',
+          requiresRestart: data.note?.includes('restart')
+        })
+        
+        // Redirect after showing success message
+        setTimeout(() => {
+          router.push("/admin/apps")
+        }, 3000)
       } else {
-        console.error('Failed to create app')
+        setSubmitStatus({
+          type: 'error',
+          message: data.error || 'Failed to create application'
+        })
       }
     } catch (error) {
-      console.error('Error creating app:', error)
+      setSubmitStatus({
+        type: 'error',
+        message: error instanceof Error ? error.message : 'Failed to create application'
+      })
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -340,19 +367,41 @@ export default function NewApp() {
             {/* Actions */}
             <Card>
               <CardContent className="pt-6">
-                <div className="space-y-2">
-                  <Button type="submit" className="w-full">
-                    <Save className="mr-2 h-4 w-4" />
-                    Create Application
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full bg-transparent"
-                    onClick={() => router.back()}
-                  >
-                    Cancel
-                  </Button>
+                <div className="space-y-4">
+                  {/* Status Messages */}
+                  {submitStatus.type && (
+                    <div className={`p-4 rounded-lg ${
+                      submitStatus.type === 'success' 
+                        ? 'bg-green-50 border border-green-200 text-green-800' 
+                        : 'bg-red-50 border border-red-200 text-red-800'
+                    }`}>
+                      <div className="text-sm font-medium">
+                        {submitStatus.type === 'success' ? '✅ Success!' : '❌ Error'}
+                      </div>
+                      <div className="text-sm mt-1">{submitStatus.message}</div>
+                      {submitStatus.requiresRestart && (
+                        <div className="text-xs mt-2 p-2 bg-yellow-100 border border-yellow-300 rounded text-yellow-800">
+                          <strong>Important:</strong> Please restart the development server to see the new app in the dashboard.
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  
+                  <div className="space-y-2">
+                    <Button type="submit" className="w-full" disabled={isSubmitting}>
+                      <Save className="mr-2 h-4 w-4" />
+                      {isSubmitting ? 'Creating Application...' : 'Create Application'}
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      className="w-full bg-transparent"
+                      onClick={() => router.back()}
+                      disabled={isSubmitting}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
