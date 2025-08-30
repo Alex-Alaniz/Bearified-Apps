@@ -96,6 +96,30 @@ export default function UserManagement() {
     fetchUsers()
   }, [currentUser])
 
+  const handleDeleteUser = async (userId: string, userEmail: string) => {
+    if (!confirm(`Are you sure you want to delete user ${userEmail}? This action cannot be undone.`)) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/users/${userId}`, {
+        method: 'DELETE',
+      })
+
+      if (response.ok) {
+        alert('User deleted successfully')
+        // Refresh the user list
+        await fetchUsers()
+      } else {
+        const data = await response.json()
+        alert(`Failed to delete user: ${data.error || 'Unknown error'}`)
+      }
+    } catch (error) {
+      console.error('Error deleting user:', error)
+      alert('Failed to delete user')
+    }
+  }
+
   const syncWithPrivy = async () => {
     setSyncing(true)
     try {
@@ -327,7 +351,10 @@ export default function UserManagement() {
                           <Mail className="mr-2 h-4 w-4" />
                           Send Email
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600">
+                        <DropdownMenuItem 
+                          className="text-red-600"
+                          onClick={() => handleDeleteUser(getUserSlug(user), getUserDisplayEmail(user) || user.email)}
+                        >
                           <Trash2 className="mr-2 h-4 w-4" />
                           Delete User
                         </DropdownMenuItem>

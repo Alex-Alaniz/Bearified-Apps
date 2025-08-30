@@ -35,7 +35,7 @@ export async function GET(
             name: privyUser.name || "Alex Alaniz",
             roles: privyUser.roles || ["super_admin", "admin", "user"],
             apps: ["SoleBrew", "Chimpanion", "Golf App", "Admin Panel"], // Static for now
-            status: roles?.length > 0 ? "active" : "pending",
+            status: "active",
             lastLogin: "Just now",
             linkedAccounts: {
               phone: null,
@@ -146,7 +146,7 @@ export async function GET(
           return false
         }),
         // Check if status is stored in avatar field (workaround for missing status column)
-        status: user.avatar?.startsWith('status:') ? user.avatar.replace('status:', '') : (user.roles?.length > 0 ? "active" : "pending"),
+        status: user.avatar?.startsWith('status:') ? user.avatar.replace('status:', '') : (user.roles?.includes('super_admin') || user.roles?.includes('admin') ? "active" : (user.roles?.length > 0 ? "active" : "pending")),
         linkedAccounts: {
           email: displayEmail,
           phone: phone,
@@ -175,6 +175,12 @@ export async function PUT(
     
     // Map apps to their corresponding roles
     let finalRoles = roles || []
+    
+    // Auto-activate users with admin or super_admin roles
+    let finalStatus = status
+    if ((finalRoles.includes('super_admin') || finalRoles.includes('admin')) && (!status || status === 'pending')) {
+      finalStatus = 'active'
+    }
     
     // Handle app-based role assignments
     if (apps && Array.isArray(apps)) {
@@ -216,6 +222,11 @@ export async function PUT(
         finalRoles.push('admin')
       }
     }
+    
+    // Re-check for auto-activation after app-based role assignments
+    if ((finalRoles.includes('super_admin') || finalRoles.includes('admin')) && (!finalStatus || finalStatus === 'pending')) {
+      finalStatus = 'active'
+    }
 
     // For Alex's account (super admin)
     if (userId === "999" || userId === "super-admin" || userId === "alex") {
@@ -243,7 +254,7 @@ export async function PUT(
             name,
             roles: finalRoles,
             // Store status in avatar field as workaround for missing status column
-            avatar: status ? `status:${status}` : existingUser.avatar,
+            avatar: finalStatus ? `status:${finalStatus}` : existingUser.avatar,
             updated_at: new Date().toISOString()
           })
           .eq('email', 'alex@alexalaniz.com')
@@ -271,7 +282,7 @@ export async function PUT(
               if (app === "Golf App" && (updatedUser.roles?.includes("golf") || updatedUser.roles?.includes("golf-admin") || updatedUser.roles?.includes("golf-member"))) return true
               return false
             }),
-            status: updatedUser.roles?.length > 0 ? "active" : "pending",
+            status: finalStatus || "active",
             lastLogin: "Just now",
             linkedAccounts: {
               phone: null,
@@ -315,7 +326,7 @@ export async function PUT(
               if (app === "Golf App" && (newUser.roles?.includes("golf") || newUser.roles?.includes("golf-admin") || newUser.roles?.includes("golf-member"))) return true
               return false
             }),
-            status: newUser.roles?.length > 0 ? "active" : "pending",
+            status: finalStatus || "active",
             lastLogin: "Just now",
             linkedAccounts: {
               phone: null,
@@ -332,7 +343,7 @@ export async function PUT(
         name,
         roles: finalRoles,
         // Store status in avatar field as workaround for missing status column
-        avatar: status ? `status:${status}` : null,
+        avatar: finalStatus ? `status:${finalStatus}` : null,
         updated_at: new Date().toISOString()
       })
     
@@ -373,7 +384,7 @@ export async function PUT(
           return false
         }),
         // Use stored status from avatar field, or compute from roles
-        status: user.avatar?.startsWith('status:') ? user.avatar.replace('status:', '') : (user.roles?.length > 0 ? "active" : "pending"),
+        status: user.avatar?.startsWith('status:') ? user.avatar.replace('status:', '') : (user.roles?.includes('super_admin') || user.roles?.includes('admin') ? "active" : (user.roles?.length > 0 ? "active" : "pending")),
         linkedAccounts: linkedAccounts || {
           phone: null,
           wallet: null

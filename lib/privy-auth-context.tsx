@@ -17,6 +17,7 @@ interface AuthContextType {
   hasRole: (role: string) => boolean
   isSuperAdmin: () => boolean
   isAuthenticated: boolean
+  refreshUserData: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -166,6 +167,46 @@ export function BearifiedAuthProvider({ children }: { children: React.ReactNode 
     return user?.role === "super_admin" || false
   }
 
+  const refreshUserData = async () => {
+    if (!user) return
+    
+    try {
+      // Fetch updated user data from database
+      const response = await fetch('/api/auth/user', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          privyId: user.id,
+          email: user.email,
+          refresh: true // Flag to indicate this is a refresh request
+        })
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        if (data.success && data.user) {
+          // Map database user to our User type
+          const userData: User = {
+            id: user.id,
+            email: data.user.email,
+            name: data.user.name || user.email?.split("@")[0] || "User",
+            role: data.user.roles?.includes("super_admin") ? "super_admin" : 
+                  data.user.roles?.includes("admin") ? "admin" : "user",
+            roles: data.user.roles || [],
+            apps: data.user.apps || [],
+            isAuthenticated: true
+          }
+          
+          setUser(userData)
+          setApps(getUserApps(userData))
+          localStorage.setItem("bearified_user", JSON.stringify(userData))
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing user data:", error)
+    }
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -178,6 +219,7 @@ export function BearifiedAuthProvider({ children }: { children: React.ReactNode 
         hasRole,
         isSuperAdmin,
         isAuthenticated: !!user,
+        refreshUserData,
       }}
     >
       {children}
